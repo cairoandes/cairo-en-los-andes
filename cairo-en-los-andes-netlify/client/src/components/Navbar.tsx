@@ -59,11 +59,14 @@ export default function Navbar() {
   );
 
   return (
+    <>
     <nav
       className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 ${
         scrolled
           ? "bg-[#080c1a]/95 backdrop-blur-md shadow-lg shadow-black/30"
           : "bg-transparent"
+      } ${
+        mobileOpen ? "!h-screen !bg-[#080c1a] overflow-hidden" : ""
       }`}
     >
       <style>{`
@@ -187,9 +190,9 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile menu — full screen overlay with scroll */}
+      {/* Mobile menu — renders inside nav when open */}
       {mobileOpen && (
-        <div className="lg:hidden fixed inset-x-0 top-16 bottom-0 bg-[#080c1a] border-t border-[#d4a843]/20 overflow-y-auto z-[9999]" style={{ backgroundColor: '#080c1a' }}>
+        <div className="lg:hidden absolute left-0 right-0 top-16 border-t border-[#d4a843]/20 overflow-y-auto" style={{ backgroundColor: '#080c1a', height: 'calc(100vh - 4rem)' }}>
           <div className="container py-6 pb-24 flex flex-col gap-4">
             {/* ═══ FEATURED: Pasaporte Cairo Andes CTA ═══ */}
             <Link
@@ -295,5 +298,13 @@ export default function Navbar() {
         </div>
       )}
     </nav>
+    {/* Backdrop to prevent interaction with page behind menu */}
+    {mobileOpen && (
+      <div
+        className="lg:hidden fixed inset-0 bg-black/50 z-40"
+        onClick={() => setMobileOpen(false)}
+      />
+    )}
+    </>
   );
 }
