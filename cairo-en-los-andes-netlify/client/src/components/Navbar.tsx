@@ -189,7 +189,7 @@ export default function Navbar() {
 
       {/* Mobile menu — full screen overlay with scroll */}
       {mobileOpen && (
-        <div className="lg:hidden fixed inset-0 top-16 bg-[#080c1a]/98 backdrop-blur-lg border-t border-[#d4a843]/20 overflow-y-auto z-50">
+        <div className="lg:hidden fixed inset-x-0 top-16 bottom-0 bg-[#080c1a] border-t border-[#d4a843]/20 overflow-y-auto z-[9999]" style={{ backgroundColor: '#080c1a' }}>
           <div className="container py-6 pb-24 flex flex-col gap-4">
             {/* ═══ FEATURED: Pasaporte Cairo Andes CTA ═══ */}
             <Link
