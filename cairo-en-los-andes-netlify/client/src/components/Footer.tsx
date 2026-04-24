@@ -1,10 +1,21 @@
 import { Instagram, Mail, Phone } from "lucide-react";
 import { useLang } from "@/contexts/LanguageContext";
 import { navLinks, t } from "@/lib/translations";
+import { Link, useLocation } from "wouter";
 
 export default function Footer() {
   const { lang } = useLang();
   const links = navLinks(lang);
+  const [location] = useLocation();
+
+  const handleScrollClick = (href: string) => {
+    if (location !== "/") {
+      window.location.href = "/" + href;
+      return;
+    }
+    const el = document.querySelector(href);
+    if (el) el.scrollIntoView({ behavior: "smooth" });
+  };
 
   return (
     <footer className="bg-[#060a18] border-t border-[#d4a843]/10">
@@ -26,18 +37,25 @@ export default function Footer() {
               {t(lang, "footerNav")}
             </h4>
             <div className="flex flex-col gap-2">
-              {links.map((item) => (
-                <button
-                  key={item.href}
-                  onClick={() => {
-                    const el = document.querySelector(item.href);
-                    if (el) el.scrollIntoView({ behavior: "smooth" });
-                  }}
-                  className="text-left text-sm text-[#faf5eb]/50 hover:text-[#d4a843] transition-colors"
-                >
-                  {item.label}
-                </button>
-              ))}
+              {links.map((item) =>
+                item.type === "page" ? (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="text-left text-sm text-[#faf5eb]/50 hover:text-[#d4a843] transition-colors"
+                  >
+                    {item.label}
+                  </Link>
+                ) : (
+                  <button
+                    key={item.href}
+                    onClick={() => handleScrollClick(item.href)}
+                    className="text-left text-sm text-[#faf5eb]/50 hover:text-[#d4a843] transition-colors"
+                  >
+                    {item.label}
+                  </button>
+                )
+              )}
             </div>
           </div>
 

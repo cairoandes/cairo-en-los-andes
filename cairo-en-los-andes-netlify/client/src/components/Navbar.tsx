@@ -3,7 +3,7 @@
  * Navbar: sticky, transparent → solid on scroll, gold accents, Cinzel font for brand
  * Bilingual: ES | EN toggle
  * Desktop: two-row layout — brand + CTA top, nav links bottom
- * Mobile: hamburger menu with featured Pasaporte CTA
+ * Mobile: hamburger menu with featured Pasaporte CTA, scrollable, language switcher at bottom
  */
 import { useState, useEffect } from "react";
 import { Menu, X, Sparkles, UserCircle } from "lucide-react";
@@ -23,6 +23,18 @@ export default function Navbar() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileOpen]);
 
   const handleScrollClick = (href: string) => {
     setMobileOpen(false);
@@ -175,10 +187,10 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile menu */}
+      {/* Mobile menu — full screen overlay with scroll */}
       {mobileOpen && (
-        <div className="lg:hidden bg-[#080c1a]/98 backdrop-blur-lg border-t border-[#d4a843]/20">
-          <div className="container py-6 flex flex-col gap-4">
+        <div className="lg:hidden fixed inset-0 top-16 bg-[#080c1a]/98 backdrop-blur-lg border-t border-[#d4a843]/20 overflow-y-auto z-50">
+          <div className="container py-6 pb-24 flex flex-col gap-4">
             {/* ═══ FEATURED: Pasaporte Cairo Andes CTA ═══ */}
             <Link
               href="/pasaporte-cairo-andes"
@@ -266,13 +278,18 @@ export default function Navbar() {
                 </button>
               )
             )}
+
+            {/* Separator before INSCRIBITE */}
+            <div className="h-px bg-gradient-to-r from-transparent via-[#d4a843]/15 to-transparent mt-2" />
+
+            {/* INSCRIBITE / SIGN UP button — bilingual, links to WhatsApp */}
             <a
               href="https://wa.me/5493872617777"
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-2 inline-flex items-center justify-center px-5 py-3 text-sm font-semibold tracking-wider uppercase bg-gradient-to-r from-[#d4a843] to-[#e8842a] text-[#080c1a] rounded"
+              className="mt-2 inline-flex items-center justify-center w-full px-5 py-4 text-base font-bold tracking-wider uppercase bg-gradient-to-r from-[#d4a843] to-[#e8842a] text-[#080c1a] rounded-xl hover:shadow-lg hover:shadow-[#d4a843]/20 transition-all duration-300"
             >
-              {t(lang, "navCta")}
+              {lang === "es" ? "INSCRIBITE" : "SIGN UP"}
             </a>
           </div>
         </div>
