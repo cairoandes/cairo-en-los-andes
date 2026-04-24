@@ -1,6 +1,6 @@
 /*
  * FloatingLangSwitcher — Premium floating language pill
- * Design: Compact pill capsule, bottom-left, always visible during scroll
+ * Design: Compact pill capsule, bottom-right, always visible during scroll
  * Style: Dark glass with gold accent, subtle shadow, micro-animation on toggle
  * Consistent with Cairo Andes branding (dark navy + gold)
  */
@@ -18,7 +18,7 @@ export default function FloatingLangSwitcher() {
   };
 
   return (
-    <div className="fixed bottom-6 left-6 z-[60]">
+    <div className="fixed bottom-6 right-6 z-[60]">
       <style>{`
         @keyframes langPillPulse {
           0% { box-shadow: 0 2px 16px rgba(0,0,0,0.3), 0 0 0 0 rgba(212,168,67,0.15); }

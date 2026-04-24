@@ -157,15 +157,15 @@ export default function Turismo() {
               {c.heroSubtitle}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a href={WA_LINK} target="_blank" rel="noopener noreferrer">
-                <Button className="bg-amber-500 hover:bg-amber-600 text-black font-bold px-8 py-6 text-lg rounded-lg">
-                  <MessageCircle className="w-5 h-5 mr-2" />
+              <a href={WA_LINK} target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
+                <Button className="bg-amber-500 hover:bg-amber-600 text-black font-bold px-6 sm:px-8 py-5 sm:py-6 text-base sm:text-lg rounded-lg w-full sm:w-auto whitespace-normal">
+                  <MessageCircle className="w-5 h-5 mr-2 shrink-0" />
                   {c.btnSolicitar}
                 </Button>
               </a>
-              <a href={WA_LINK} target="_blank" rel="noopener noreferrer">
-                <Button variant="outline" className="border-amber-400 text-amber-300 hover:bg-amber-400/10 px-8 py-6 text-lg rounded-lg">
-                  <MessageCircle className="w-5 h-5 mr-2" />
+              <a href={WA_LINK} target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
+                <Button variant="outline" className="border-amber-400 text-amber-300 hover:bg-amber-400/10 px-6 sm:px-8 py-5 sm:py-6 text-base sm:text-lg rounded-lg w-full sm:w-auto whitespace-normal">
+                  <MessageCircle className="w-5 h-5 mr-2 shrink-0" />
                   {c.btnWhatsApp}
                 </Button>
               </a>
@@ -299,7 +299,7 @@ export default function Turismo() {
       <section className="py-20 bg-[#0d1225]">
         <div className="container max-w-4xl mx-auto px-4">
           <AnimateOnScroll>
-            <div className="bg-gradient-to-br from-[#141a30] to-[#1a2240] border border-amber-500/30 rounded-2xl p-8 md:p-12">
+            <div className="bg-gradient-to-br from-[#141a30] to-[#1a2240] border border-amber-500/30 rounded-2xl p-5 sm:p-8 md:p-12 overflow-hidden">
               <h2 className="font-serif text-3xl md:text-4xl font-bold text-amber-300 mb-6 text-center">
                 {c.customTitle}
               </h2>
@@ -319,8 +319,8 @@ export default function Turismo() {
               </p>
               <div className="text-center">
                 <a href={WA_LINK} target="_blank" rel="noopener noreferrer">
-                  <Button className="bg-amber-500 hover:bg-amber-600 text-black font-bold px-8 py-4 text-lg rounded-lg">
-                    <MessageCircle className="w-5 h-5 mr-2" />
+                  <Button className="bg-amber-500 hover:bg-amber-600 text-black font-bold px-6 sm:px-8 py-4 text-base sm:text-lg rounded-lg w-full sm:w-auto whitespace-normal text-center">
+                    <MessageCircle className="w-5 h-5 mr-2 shrink-0" />
                     {c.customCta}
                   </Button>
                 </a>
@@ -346,15 +346,15 @@ export default function Turismo() {
               {c.ctaText}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a href={WA_LINK} target="_blank" rel="noopener noreferrer">
-                <Button className="bg-amber-500 hover:bg-amber-600 text-black font-bold px-8 py-5 text-lg rounded-lg">
-                  <MessageCircle className="w-5 h-5 mr-2" />
+              <a href={WA_LINK} target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
+                <Button className="bg-amber-500 hover:bg-amber-600 text-black font-bold px-6 sm:px-8 py-5 text-base sm:text-lg rounded-lg w-full sm:w-auto whitespace-normal">
+                  <MessageCircle className="w-5 h-5 mr-2 shrink-0" />
                   {c.ctaBtnWA}
                 </Button>
               </a>
-              <a href="mailto:info@cairoandes.com">
-                <Button variant="outline" className="border-amber-400 text-amber-300 hover:bg-amber-400/10 px-8 py-5 text-lg rounded-lg">
-                  <Mail className="w-5 h-5 mr-2" />
+              <a href="mailto:info@cairoandes.com" className="w-full sm:w-auto">
+                <Button variant="outline" className="border-amber-400 text-amber-300 hover:bg-amber-400/10 px-6 sm:px-8 py-5 text-base sm:text-lg rounded-lg w-full sm:w-auto whitespace-normal">
+                  <Mail className="w-5 h-5 mr-2 shrink-0" />
                   {c.ctaBtnInfo}
                 </Button>
               </a>
