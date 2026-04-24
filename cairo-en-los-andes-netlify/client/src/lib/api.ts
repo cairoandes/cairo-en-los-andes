@@ -38,14 +38,22 @@ export type Participant = {
   name: string | null;
 };
 
+export type PaymentRecord = {
+  label: string;
+  amount: string;
+};
+
 export type SheetData = {
   nombre: string;
   paquete: string;
   competencia: string;
   participaciones: string;
+  precioBase: string;
+  totalAPagar: string;
   pagado: string;
   saldo: string;
   email: string;
+  pagos: PaymentRecord[];
 };
 
 export type MyDataResponse = {

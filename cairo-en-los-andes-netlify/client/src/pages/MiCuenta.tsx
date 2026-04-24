@@ -28,6 +28,10 @@ import {
   Sparkles,
   MessageCircle,
   KeyRound,
+  Receipt,
+  Tag,
+  Calculator,
+  ExternalLink,
 } from "lucide-react";
 
 /* ── Translations ── */
@@ -65,6 +69,8 @@ const txt = {
     dashPackage: "Paquete",
     dashCompetition: "Competencia",
     dashParticipations: "Participaciones",
+    dashPriceBase: "Precio Base Paquete",
+    dashTotalToPay: "Total a Pagar",
     dashPaid: "Pagado (USD)",
     dashBalance: "Saldo (USD)",
     dashNotRegistered: "Tu email no está registrado en el festival",
@@ -73,6 +79,7 @@ const txt = {
     dashSheetsError:
       "No se pudo cargar la información del festival. Intentá más tarde.",
     dashWhatsApp: "Contactar por WhatsApp",
+    dashRequestServices: "Solicitar más servicios",
     logoutBtn: "Cerrar Sesión",
     welcomeBack: "¡Bienvenido/a",
     paidFull: "Pagado completo",
@@ -90,6 +97,13 @@ const txt = {
     forgotSuccessMsg:
       "Si tu email está registrado, el organizador del festival te contactará por WhatsApp con un enlace para recuperar tu contraseña.",
     forgotBackToLogin: "Volver a Iniciar Sesión",
+    paymentHistory: "Historial de Pagos",
+    paymentHistoryDesc: "Detalle de tus pagos realizados",
+    noPayments: "Aún no hay pagos registrados",
+    paymentExtra: "Pago Extra",
+    pago: "Pago",
+    whatsappMsg:
+      "Hola%2C%20quiero%20solicitar%20m%C3%A1s%20servicios%20para%20el%20festival%20Cairo%20en%20los%20Andes",
   },
   en: {
     pageTitle: "My Account",
@@ -124,6 +138,8 @@ const txt = {
     dashPackage: "Package",
     dashCompetition: "Competition",
     dashParticipations: "Participations",
+    dashPriceBase: "Package Base Price",
+    dashTotalToPay: "Total to Pay",
     dashPaid: "Paid (USD)",
     dashBalance: "Balance (USD)",
     dashNotRegistered: "Your email is not registered in the festival",
@@ -132,6 +148,7 @@ const txt = {
     dashSheetsError:
       "Could not load festival information. Please try again later.",
     dashWhatsApp: "Contact via WhatsApp",
+    dashRequestServices: "Request more services",
     logoutBtn: "Log Out",
     welcomeBack: "Welcome back",
     paidFull: "Paid in full",
@@ -149,8 +166,22 @@ const txt = {
     forgotSuccessMsg:
       "If your email is registered, the festival organizer will contact you via WhatsApp with a link to reset your password.",
     forgotBackToLogin: "Back to Log In",
+    paymentHistory: "Payment History",
+    paymentHistoryDesc: "Detail of your payments made",
+    noPayments: "No payments recorded yet",
+    paymentExtra: "Extra Payment",
+    pago: "Payment",
+    whatsappMsg:
+      "Hello%2C%20I%20would%20like%20to%20request%20more%20services%20for%20the%20Cairo%20en%20los%20Andes%20festival",
   },
 };
+
+/* ── Normalize payment amount: returns true if there's a real non-zero amount ── */
+function hasRealAmount(amount: string): boolean {
+  if (!amount || amount.trim() === "" || amount.trim() === "—") return false;
+  const num = parseFloat(amount.replace(/[^0-9.,]/g, "").replace(",", "."));
+  return !isNaN(num) && num > 0;
+}
 
 /* ── Payment status helper ── */
 function getPaymentStatus(
@@ -310,6 +341,11 @@ function AuthForms({
         await api.requestPasswordReset(email, window.location.origin);
         setSuccess(t.forgotSuccessMsg);
       } else if (mode === "login") {
+        if (password.length < 6) {
+          setError(t.errorPasswordShort);
+          setIsSubmitting(false);
+          return;
+        }
         await api.login(email, password);
         onSuccess();
       } else {
@@ -339,6 +375,32 @@ function AuthForms({
       setIsSubmitting(false);
     }
   };
+
+  // If forgot mode and success, show success message
+  if (mode === "forgot" && success) {
+    return (
+      <div className="bg-[#0d1230]/60 rounded-2xl border border-[#d4a843]/20 p-8 text-center">
+        <CheckCircle2 size={48} className="text-emerald-400 mx-auto mb-4" />
+        <h3 className="font-heading text-xl font-bold text-[#faf5eb] mb-2">
+          {t.forgotSuccessTitle}
+        </h3>
+        <p className="text-sm text-[#faf5eb]/60 mb-6 max-w-md mx-auto">
+          {success}
+        </p>
+        <button
+          onClick={() => {
+            setMode("login");
+            setSuccess("");
+            setEmail("");
+          }}
+          className="inline-flex items-center gap-2 px-6 py-3 border border-[#d4a843]/40 text-[#d4a843] rounded-lg hover:bg-[#d4a843]/10 transition-all text-sm uppercase tracking-wider font-medium"
+        >
+          <LogIn size={16} />
+          {t.forgotBackToLogin}
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-[#0d1230]/60 rounded-2xl border border-[#d4a843]/20 overflow-hidden">
@@ -402,7 +464,7 @@ function AuthForms({
         )}
 
         {/* Success */}
-        {success && (
+        {success && mode !== "forgot" && (
           <div className="flex items-start gap-3 p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/30">
             <CheckCircle2
               size={18}
@@ -415,7 +477,7 @@ function AuthForms({
         {/* Name (register only) */}
         {mode === "register" && (
           <div>
-            <label className="block text-sm font-medium text-[#faf5eb]/70 mb-2">
+            <label className="block text-xs font-medium text-[#faf5eb]/60 uppercase tracking-wider mb-2">
               {t.nameLabel}
             </label>
             <input
@@ -423,30 +485,32 @@ function AuthForms({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder={t.namePlaceholder}
-              className="w-full px-4 py-3 rounded-lg bg-[#080c1a]/80 border border-[#faf5eb]/15 text-[#faf5eb] placeholder-[#faf5eb]/30 focus:outline-none focus:border-[#d4a843]/50 focus:ring-1 focus:ring-[#d4a843]/30 transition-all"
+              className="w-full px-4 py-3 bg-[#080c1a]/60 border border-[#faf5eb]/15 rounded-lg text-[#faf5eb] placeholder-[#faf5eb]/25 focus:outline-none focus:border-[#d4a843]/50 transition-all"
             />
           </div>
         )}
 
         {/* Email */}
         <div>
-          <label className="block text-sm font-medium text-[#faf5eb]/70 mb-2">
+          <label className="block text-xs font-medium text-[#faf5eb]/60 uppercase tracking-wider mb-2">
             {t.emailLabel}
           </label>
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder={t.emailPlaceholder}
+            placeholder={
+              mode === "forgot" ? t.forgotEmailPlaceholder : t.emailPlaceholder
+            }
             required
-            className="w-full px-4 py-3 rounded-lg bg-[#080c1a]/80 border border-[#faf5eb]/15 text-[#faf5eb] placeholder-[#faf5eb]/30 focus:outline-none focus:border-[#d4a843]/50 focus:ring-1 focus:ring-[#d4a843]/30 transition-all"
+            className="w-full px-4 py-3 bg-[#080c1a]/60 border border-[#faf5eb]/15 rounded-lg text-[#faf5eb] placeholder-[#faf5eb]/25 focus:outline-none focus:border-[#d4a843]/50 transition-all"
           />
         </div>
 
-        {/* Password — hidden in forgot mode */}
+        {/* Password (not for forgot mode) */}
         {mode !== "forgot" && (
           <div>
-            <label className="block text-sm font-medium text-[#faf5eb]/70 mb-2">
+            <label className="block text-xs font-medium text-[#faf5eb]/60 uppercase tracking-wider mb-2">
               {t.passwordLabel}
             </label>
             <div className="relative">
@@ -456,13 +520,12 @@ function AuthForms({
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder={t.passwordPlaceholder}
                 required
-                minLength={mode === "register" ? 6 : 1}
-                className="w-full px-4 py-3 pr-12 rounded-lg bg-[#080c1a]/80 border border-[#faf5eb]/15 text-[#faf5eb] placeholder-[#faf5eb]/30 focus:outline-none focus:border-[#d4a843]/50 focus:ring-1 focus:ring-[#d4a843]/30 transition-all"
+                className="w-full px-4 py-3 bg-[#080c1a]/60 border border-[#faf5eb]/15 rounded-lg text-[#faf5eb] placeholder-[#faf5eb]/25 focus:outline-none focus:border-[#d4a843]/50 transition-all pr-12"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#faf5eb]/40 hover:text-[#faf5eb]/70 transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#faf5eb]/30 hover:text-[#faf5eb]/60 transition-colors"
               >
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
@@ -470,42 +533,9 @@ function AuthForms({
           </div>
         )}
 
-        {/* Submit */}
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="w-full flex items-center justify-center gap-2 py-3.5 rounded-lg bg-gradient-to-r from-[#d4a843] to-[#e8842a] text-[#080c1a] font-bold text-sm uppercase tracking-wider hover:shadow-lg hover:shadow-[#d4a843]/20 transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed"
-        >
-          {isSubmitting ? (
-            <>
-              <Loader2 size={18} className="animate-spin" />
-              {mode === "forgot"
-                ? t.forgotSending
-                : mode === "login"
-                  ? t.loggingIn
-                  : t.registering}
-            </>
-          ) : (
-            <>
-              {mode === "forgot" ? (
-                <KeyRound size={18} />
-              ) : mode === "login" ? (
-                <LogIn size={18} />
-              ) : (
-                <UserPlus size={18} />
-              )}
-              {mode === "forgot"
-                ? t.forgotSendBtn
-                : mode === "login"
-                  ? t.loginBtn
-                  : t.registerBtn}
-            </>
-          )}
-        </button>
-
         {/* Forgot password link (login mode only) */}
         {mode === "login" && (
-          <p className="text-center">
+          <div className="text-right">
             <button
               type="button"
               onClick={() => {
@@ -513,16 +543,38 @@ function AuthForms({
                 setError("");
                 setSuccess("");
               }}
-              className="text-xs text-[#faf5eb]/40 hover:text-[#d4a843] transition-colors"
+              className="text-xs text-[#d4a843]/70 hover:text-[#d4a843] transition-colors"
             >
               {t.forgotPassword}
             </button>
-          </p>
+          </div>
         )}
 
-        {/* Switch mode / back to login */}
+        {/* Submit */}
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="w-full py-3.5 bg-gradient-to-r from-[#d4a843] via-[#e8c35a] to-[#e8842a] text-[#080c1a] font-bold text-sm uppercase tracking-wider rounded-lg hover:shadow-lg hover:shadow-[#d4a843]/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isSubmitting && (
+            <Loader2 size={18} className="inline animate-spin mr-2" />
+          )}
+          {mode === "forgot"
+            ? isSubmitting
+              ? t.forgotSending
+              : t.forgotSendBtn
+            : mode === "login"
+            ? isSubmitting
+              ? t.loggingIn
+              : t.loginBtn
+            : isSubmitting
+            ? t.registering
+            : t.registerBtn}
+        </button>
+
+        {/* Switch mode links */}
         {mode === "forgot" ? (
-          <p className="text-center text-sm text-[#faf5eb]/50">
+          <p className="text-center text-sm text-[#faf5eb]/40">
             <button
               type="button"
               onClick={() => {
@@ -530,13 +582,13 @@ function AuthForms({
                 setError("");
                 setSuccess("");
               }}
-              className="text-[#d4a843] hover:text-[#e8c35a] font-medium transition-colors"
+              className="text-[#d4a843] hover:underline ml-1"
             >
               {t.forgotBackToLogin}
             </button>
           </p>
         ) : (
-          <p className="text-center text-sm text-[#faf5eb]/50">
+          <p className="text-center text-sm text-[#faf5eb]/40">
             {mode === "login" ? t.noAccount : t.hasAccount}{" "}
             <button
               type="button"
@@ -545,7 +597,7 @@ function AuthForms({
                 setError("");
                 setSuccess("");
               }}
-              className="text-[#d4a843] hover:text-[#e8c35a] font-medium transition-colors"
+              className="text-[#d4a843] hover:underline"
             >
               {mode === "login" ? t.createOne : t.loginHere}
             </button>
@@ -584,8 +636,6 @@ function Dashboard({
     }
   };
 
-  const isDataLoading = false; // data is already loaded
-
   return (
     <div className="space-y-6">
       {/* Welcome header */}
@@ -614,12 +664,7 @@ function Dashboard({
       </div>
 
       {/* Dashboard content */}
-      {isDataLoading ? (
-        <div className="flex items-center justify-center py-16">
-          <Loader2 size={32} className="text-[#d4a843] animate-spin" />
-          <span className="ml-3 text-[#faf5eb]/50">{t.loading}</span>
-        </div>
-      ) : myData?.data ? (
+      {myData?.data ? (
         <DashboardData lang={lang} t={t} data={myData.data} />
       ) : myData?.sheetsError ? (
         <SheetsErrorCard t={t} />
@@ -643,39 +688,51 @@ function DashboardData({
     paquete: string;
     competencia: string;
     participaciones: string;
+    precioBase?: string;
+    totalAPagar?: string;
     pagado: string;
     saldo: string;
+    pagos?: { label: string; amount: string }[];
   };
 }) {
   const paymentStatus = getPaymentStatus(data.pagado, data.saldo, lang);
   const PaymentIcon = paymentStatus.icon;
 
-  const dataCards = [
+  const infoCards = [
     {
       icon: User,
       label: t.dashName,
       value: data.nombre || "—",
-      accent: false,
     },
     {
       icon: Package,
       label: t.dashPackage,
       value: data.paquete || "—",
-      accent: false,
     },
     {
       icon: Trophy,
       label: t.dashCompetition,
       value: data.competencia || "—",
-      accent: false,
     },
     {
       icon: Hash,
       label: t.dashParticipations,
       value: data.participaciones || "—",
-      accent: false,
     },
   ];
+
+  // Generate bilingual payment labels on the frontend
+  const pagoLabels = [
+    `${t.pago} 1`,
+    `${t.pago} 2`,
+    `${t.pago} 3`,
+    `${t.pago} 4`,
+    `${t.pago} 5`,
+    `${t.pago} 6`,
+    t.paymentExtra,
+  ];
+
+  const hasPayments = data.pagos?.some((p) => hasRealAmount(p.amount));
 
   return (
     <div className="space-y-6">
@@ -689,7 +746,7 @@ function DashboardData({
 
       {/* Info cards grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {dataCards.map((card) => (
+        {infoCards.map((card) => (
           <div
             key={card.label}
             className="bg-[#0d1230]/60 rounded-xl border border-[#faf5eb]/10 p-5 hover:border-[#d4a843]/30 transition-all duration-300"
@@ -707,7 +764,41 @@ function DashboardData({
         ))}
       </div>
 
-      {/* Payment section */}
+      {/* Pricing section: Precio Base + Total a Pagar */}
+      <div className="bg-[#0d1230]/60 rounded-xl border border-[#d4a843]/20 p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <Tag size={18} className="text-[#d4a843]" />
+          <h4 className="font-heading text-base font-bold text-[#faf5eb]">
+            {lang === "es" ? "Detalle del Paquete" : "Package Details"}
+          </h4>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="bg-[#080c1a]/60 rounded-lg p-4 border border-[#faf5eb]/5">
+            <div className="flex items-center gap-2 mb-1">
+              <Tag size={14} className="text-[#d4a843]/70" />
+              <span className="text-xs text-[#faf5eb]/50 uppercase tracking-wider">
+                {t.dashPriceBase}
+              </span>
+            </div>
+            <p className="text-xl font-bold text-[#d4a843] pl-5">
+              {data.precioBase || "—"}
+            </p>
+          </div>
+          <div className="bg-[#080c1a]/60 rounded-lg p-4 border border-[#faf5eb]/5">
+            <div className="flex items-center gap-2 mb-1">
+              <Calculator size={14} className="text-[#d4a843]/70" />
+              <span className="text-xs text-[#faf5eb]/50 uppercase tracking-wider">
+                {t.dashTotalToPay}
+              </span>
+            </div>
+            <p className="text-xl font-bold text-[#d4a843] pl-5">
+              {data.totalAPagar || "—"}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Payment status section: Pagado + Saldo */}
       <div className="bg-[#0d1230]/60 rounded-xl border border-[#d4a843]/20 p-6">
         <div className="flex items-center gap-3 mb-4">
           <DollarSign size={18} className="text-[#d4a843]" />
@@ -750,6 +841,77 @@ function DashboardData({
             </p>
           </div>
         </div>
+      </div>
+
+      {/* Payment History section */}
+      <div className="bg-[#0d1230]/60 rounded-xl border border-[#faf5eb]/10 p-6">
+        <div className="flex items-center gap-3 mb-2">
+          <Receipt size={18} className="text-[#d4a843]" />
+          <h4 className="font-heading text-base font-bold text-[#faf5eb]">
+            {t.paymentHistory}
+          </h4>
+        </div>
+        <p className="text-xs text-[#faf5eb]/40 mb-4 pl-8">
+          {t.paymentHistoryDesc}
+        </p>
+
+        {hasPayments ? (
+          <div className="space-y-2">
+            {data.pagos?.map((pago, idx) => {
+              const hasAmount = hasRealAmount(pago.amount);
+              return (
+                <div
+                  key={idx}
+                  className={`flex items-center justify-between px-4 py-3 rounded-lg border ${
+                    hasAmount
+                      ? "bg-emerald-400/5 border-emerald-400/15"
+                      : "bg-[#080c1a]/40 border-[#faf5eb]/5"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`w-2 h-2 rounded-full ${
+                        hasAmount ? "bg-emerald-400" : "bg-[#faf5eb]/20"
+                      }`}
+                    />
+                    <span
+                      className={`text-sm font-medium ${
+                        hasAmount ? "text-[#faf5eb]" : "text-[#faf5eb]/30"
+                      }`}
+                    >
+                      {pagoLabels[idx] || pago.label}
+                    </span>
+                  </div>
+                  <span
+                    className={`text-sm font-bold ${
+                      hasAmount ? "text-emerald-400" : "text-[#faf5eb]/20"
+                    }`}
+                  >
+                    {hasAmount ? pago.amount : "—"}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="text-center py-6 text-[#faf5eb]/30 text-sm">
+            {t.noPayments}
+          </div>
+        )}
+      </div>
+
+      {/* WhatsApp - Request more services button */}
+      <div className="text-center pt-2">
+        <a
+          href={`https://wa.me/5493872617777?text=${t.whatsappMsg}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-[#d4a843] via-[#e8c35a] to-[#e8842a] text-[#080c1a] font-bold text-sm uppercase tracking-wider rounded-xl hover:shadow-lg hover:shadow-[#d4a843]/25 transition-all hover:scale-[1.02]"
+        >
+          <MessageCircle size={20} />
+          {t.dashRequestServices}
+          <ExternalLink size={14} />
+        </a>
       </div>
     </div>
   );
