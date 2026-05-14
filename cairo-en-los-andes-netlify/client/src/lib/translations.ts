@@ -13,6 +13,7 @@ export const navLinks = (lang: Lang) => [
   { label: "Workshops", href: "#workshops", type: "scroll" as const },
   { label: "Galas", href: "/galas", type: "page" as const },
   { label: lang === "es" ? "Premios" : "Prizes", href: "/premios", type: "page" as const },
+  { label: lang === "es" ? "Competencia" : "Competition", href: "/competencia", type: "page" as const },
   { label: lang === "es" ? "Paquetes" : "Packages", href: "#paquetes", type: "scroll" as const },
   { label: "Sponsors", href: "/sponsors", type: "page" as const },
   { label: lang === "es" ? "Turismo" : "Tourism", href: "/turismo", type: "page" as const },

@@ -15,6 +15,7 @@ import GalasPage from "./pages/Galas";
 import Turismo from "./pages/Turismo";
 import Pasaporte from "./pages/Pasaporte";
 import MiCuenta from "./pages/MiCuenta";
+import Competencia from "./pages/Competencia";
 import ResetPassword from "./pages/ResetPassword";
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -26,6 +27,7 @@ function Router() {
         <Route path={"/maestros"} component={Maestros} />
         <Route path={"/sponsors"} component={Sponsors} />
         <Route path={"/premios"} component={Premios} />
+        <Route path={"/competencia"} component={Competencia} />
         <Route path={"/galas"} component={GalasPage} />
         <Route path={"/turismo"} component={Turismo} />
         <Route path={"/pasaporte-cairo-andes"} component={Pasaporte} />
