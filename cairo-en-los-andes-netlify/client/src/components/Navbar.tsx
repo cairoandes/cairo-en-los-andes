@@ -133,7 +133,7 @@ export default function Navbar() {
 
             {/* CTA */}
             <a
-              href="https://wa.me/5493872617777"
+              href="https://wa.me/5493873267777"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center px-5 py-1.5 text-xs font-semibold tracking-wider uppercase bg-gradient-to-r from-[#d4a843] to-[#e8842a] text-[#080c1a] rounded hover:shadow-lg hover:shadow-[#d4a843]/20 transition-all duration-300"
@@ -287,7 +287,7 @@ export default function Navbar() {
 
             {/* INSCRIBITE / SIGN UP button — bilingual, links to WhatsApp */}
             <a
-              href="https://wa.me/5493872617777"
+              href="https://wa.me/5493873267777"
               target="_blank"
               rel="noopener noreferrer"
               className="mt-2 inline-flex items-center justify-center w-full px-5 py-4 text-base font-bold tracking-wider uppercase bg-gradient-to-r from-[#d4a843] to-[#e8842a] text-[#080c1a] rounded-xl hover:shadow-lg hover:shadow-[#d4a843]/20 transition-all duration-300"

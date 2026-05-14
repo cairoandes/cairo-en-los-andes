@@ -66,13 +66,13 @@ export default function Footer() {
             </h4>
             <div className="flex flex-col gap-3">
               <a
-                href="https://wa.me/5493872617777"
+                href="https://wa.me/5493873267777"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-3 text-sm text-[#faf5eb]/50 hover:text-[#d4a843] transition-colors"
               >
                 <Phone size={16} />
-                +54 9 387 261 7777
+                +54 9 3873 26-7777
               </a>
               <a
                 href="mailto:cairoandesfestival@gmail.com"

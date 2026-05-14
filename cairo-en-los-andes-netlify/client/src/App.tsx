@@ -16,6 +16,10 @@ import Turismo from "./pages/Turismo";
 import Pasaporte from "./pages/Pasaporte";
 import MiCuenta from "./pages/MiCuenta";
 import Competencia from "./pages/Competencia";
+import Festival from "./pages/Festival";
+import Workshops from "./pages/Workshops";
+import Paquetes from "./pages/Paquetes";
+import Contacto from "./pages/Contacto";
 import ResetPassword from "./pages/ResetPassword";
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -24,6 +28,10 @@ function Router() {
       <ScrollToTop />
       <Switch>
         <Route path={"/"} component={Home} />
+        <Route path={"/festival"} component={Festival} />
+        <Route path={"/workshops"} component={Workshops} />
+        <Route path={"/paquetes"} component={Paquetes} />
+        <Route path={"/contacto"} component={Contacto} />
         <Route path={"/maestros"} component={Maestros} />
         <Route path={"/sponsors"} component={Sponsors} />
         <Route path={"/premios"} component={Premios} />

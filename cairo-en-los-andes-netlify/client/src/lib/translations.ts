@@ -7,17 +7,17 @@ export function t(lang: Lang, key: string): string {
 
 /* ── nav ── */
 export const navLinks = (lang: Lang) => [
-  { label: lang === "es" ? "Inicio" : "Home", href: "#inicio", type: "scroll" as const },
-  { label: lang === "es" ? "El Festival" : "The Festival", href: "#festival", type: "scroll" as const },
+  { label: lang === "es" ? "Inicio" : "Home", href: "/", type: "page" as const },
+  { label: lang === "es" ? "El Festival" : "The Festival", href: "/festival", type: "page" as const },
   { label: lang === "es" ? "Maestros" : "Masters", href: "/maestros", type: "page" as const },
-  { label: "Workshops", href: "#workshops", type: "scroll" as const },
+  { label: "Workshops", href: "/workshops", type: "page" as const },
   { label: "Galas", href: "/galas", type: "page" as const },
-  { label: lang === "es" ? "Premios" : "Prizes", href: "/premios", type: "page" as const },
   { label: lang === "es" ? "Competencia" : "Competition", href: "/competencia", type: "page" as const },
-  { label: lang === "es" ? "Paquetes" : "Packages", href: "#paquetes", type: "scroll" as const },
+  { label: lang === "es" ? "Premios" : "Prizes", href: "/premios", type: "page" as const },
+  { label: lang === "es" ? "Paquetes" : "Packages", href: "/paquetes", type: "page" as const },
   { label: "Sponsors", href: "/sponsors", type: "page" as const },
   { label: lang === "es" ? "Turismo" : "Tourism", href: "/turismo", type: "page" as const },
-  { label: lang === "es" ? "Contacto" : "Contact", href: "#contacto", type: "scroll" as const },
+  { label: lang === "es" ? "Contacto" : "Contact", href: "/contacto", type: "page" as const },
   { label: lang === "es" ? "Pasaporte" : "Passport", href: "/pasaporte-cairo-andes", type: "page" as const },
   { label: lang === "es" ? "Mi Cuenta" : "My Account", href: "/mi-cuenta", type: "page" as const },
 ];
