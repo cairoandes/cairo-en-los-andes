@@ -15,7 +15,7 @@ const pricingPeriods = [
   { es: "Hasta Abr 25", en: "Until Apr 25" },
   { es: "Hasta May 25", en: "Until May 25" },
   { es: "Hasta Jun 25", en: "Until Jun 25" },
-  { es: "Desde Ago 25", en: "From Aug 25" },
+  { es: "Desde Jul", en: "From Jul" },
 ];
 
 const categories = [
@@ -108,29 +108,35 @@ const infoEN = {
 
 /* ── Helpers ── */
 /**
- * Determines current pricing period based on date.
- * Periods cut off on the 25th of each month:
- * - Period 0: Until March 25, 2025
- * - Period 1: Until April 25, 2025
- * - Period 2: Until May 25, 2025
- * - Period 3: Until June 25, 2025
- * - Period 4: From August 25, 2025 onward (final price)
+ * Determines current pricing period based on the current month and day.
+ * "25" in the labels refers to the 25th day of each month (not the year).
+ * Pricing schedule (cutoff = day 25 of each month):
+ * - Period 0: Until March 25 → cheapest price
+ * - Period 1: Until April 25
+ * - Period 2: Until May 25
+ * - Period 3: Until June 25
+ * - Period 4: From August onward → final/highest price
  */
 function getCurrentPeriodIndex(): number {
   const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth(); // 0-indexed (0=Jan, 2=Mar, 3=Apr...)
+  const month = now.getMonth(); // 0-indexed (0=Jan, 1=Feb, 2=Mar, 3=Apr, 4=May, 5=Jun, 6=Jul, 7=Aug...)
   const day = now.getDate();
 
-  // Before or on March 25, 2025
-  if (year < 2025 || (year === 2025 && (month < 2 || (month === 2 && day <= 25)))) return 0;
-  // Before or on April 25, 2025
-  if (year === 2025 && (month < 3 || (month === 3 && day <= 25))) return 1;
-  // Before or on May 25, 2025
-  if (year === 2025 && (month < 4 || (month === 4 && day <= 25))) return 2;
-  // Before or on June 25, 2025
-  if (year === 2025 && (month < 5 || (month === 5 && day <= 25))) return 3;
-  // After June 25, 2025 (final period)
+  // On or before March 25
+  if (month < 2 || (month === 2 && day <= 25)) return 0;
+  // On or before April 25
+  if (month === 3 && day <= 25) return 1;
+  // March 26-31 also falls into period 1
+  if (month === 2 && day > 25) return 1;
+  // On or before May 25
+  if (month === 4 && day <= 25) return 2;
+  // April 26-30 also falls into period 2
+  if (month === 3 && day > 25) return 2;
+  // On or before June 25
+  if (month === 5 && day <= 25) return 3;
+  // May 26-31 also falls into period 3
+  if (month === 4 && day > 25) return 3;
+  // After June 25 (Jul, Aug, Sep, Oct, Nov, Dec) → final price
   return 4;
 }
 
