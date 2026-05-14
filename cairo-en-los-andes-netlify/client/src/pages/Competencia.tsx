@@ -107,15 +107,31 @@ const infoEN = {
 };
 
 /* ── Helpers ── */
+/**
+ * Determines current pricing period based on date.
+ * Periods cut off on the 25th of each month:
+ * - Period 0: Until March 25, 2025
+ * - Period 1: Until April 25, 2025
+ * - Period 2: Until May 25, 2025
+ * - Period 3: Until June 25, 2025
+ * - Period 4: From August 25, 2025 onward (final price)
+ */
 function getCurrentPeriodIndex(): number {
   const now = new Date();
   const year = now.getFullYear();
-  const month = now.getMonth(); // 0-indexed
-  if (year < 2025 || (year === 2025 && month <= 2)) return 0; // Until Mar 25
-  if (year === 2025 && month === 3) return 1; // Until Apr 25
-  if (year === 2025 && month === 4) return 2; // Until May 25
-  if (year === 2025 && month === 5) return 3; // Until Jun 25
-  return 4; // From Aug 25
+  const month = now.getMonth(); // 0-indexed (0=Jan, 2=Mar, 3=Apr...)
+  const day = now.getDate();
+
+  // Before or on March 25, 2025
+  if (year < 2025 || (year === 2025 && (month < 2 || (month === 2 && day <= 25)))) return 0;
+  // Before or on April 25, 2025
+  if (year === 2025 && (month < 3 || (month === 3 && day <= 25))) return 1;
+  // Before or on May 25, 2025
+  if (year === 2025 && (month < 4 || (month === 4 && day <= 25))) return 2;
+  // Before or on June 25, 2025
+  if (year === 2025 && (month < 5 || (month === 5 && day <= 25))) return 3;
+  // After June 25, 2025 (final period)
+  return 4;
 }
 
 function GoldLine() {
@@ -298,9 +314,11 @@ export default function Competencia() {
                     {categoryDescs[i]}
                   </p>
                   <div className="mt-4 pt-4 border-t border-[#d4a843]/10">
-                    <span className="text-xs text-[#faf5eb]/40">{lang === "es" ? "Desde" : "From"}</span>
-                    <span className="font-heading text-2xl font-bold text-[#d4a843] ml-2">${cat.prices[0]}</span>
+                    <span className="font-heading text-2xl font-bold text-[#d4a843]">${cat.prices[currentPeriod]}</span>
                     <span className="text-xs text-[#faf5eb]/40 ml-1">USD</span>
+                    <span className="block text-[10px] text-[#faf5eb]/40 mt-1">
+                      {lang === "es" ? pricingPeriods[currentPeriod].es : pricingPeriods[currentPeriod].en}
+                    </span>
                   </div>
                 </div>
               </AnimateOnScroll>
@@ -368,7 +386,7 @@ export default function Competencia() {
                 {info.ctaDesc}
               </p>
               <a
-                href="https://wa.me/5493872617777?text=Hola!%20Quiero%20inscribirme%20en%20la%20competencia%20de%20Cairo%20en%20los%20Andes%202026"
+                href="https://wa.me/5493873267777?text=Hola!%20Quiero%20inscribirme%20en%20la%20competencia%20de%20Cairo%20en%20los%20Andes%202026"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-[#d4a843] via-[#e8c35a] to-[#e8842a] text-[#080c1a] rounded-xl font-heading font-bold text-lg hover:shadow-[0_0_30px_rgba(212,168,67,0.3)] hover:scale-105 transition-all duration-300"
