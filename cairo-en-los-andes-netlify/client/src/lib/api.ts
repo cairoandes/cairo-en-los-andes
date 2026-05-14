@@ -99,4 +99,35 @@ export const api = {
       "reset-password",
       { method: "POST", body: JSON.stringify({ token, newPassword }) }
     ),
+
+  // ── Organizer endpoints ──
+
+  organizerMe: () =>
+    request<{ isOrganizer: boolean; email: string | null }>("organizer-me"),
+
+  organizerParticipants: () =>
+    request<{ participants: OrganizerParticipant[] }>("organizer-participants"),
+
+  organizerSheet: (tab: string) =>
+    request<OrganizerSheetTab>(`organizer-sheet?tab=${encodeURIComponent(tab)}`),
+
+  organizerTabs: () =>
+    request<{ tabs: string[] }>("organizer-tabs"),
+};
+
+// ── Organizer types ──
+
+export type OrganizerParticipant = {
+  id: number;
+  email: string;
+  name: string | null;
+  createdAt: string;
+  updatedAt: string;
+  lastSignedIn: string;
+};
+
+export type OrganizerSheetTab = {
+  name: string;
+  headers: string[];
+  rows: string[][];
 };

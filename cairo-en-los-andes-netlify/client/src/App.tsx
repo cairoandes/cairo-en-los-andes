@@ -21,6 +21,7 @@ import Workshops from "./pages/Workshops";
 import Paquetes from "./pages/Paquetes";
 import Contacto from "./pages/Contacto";
 import ResetPassword from "./pages/ResetPassword";
+import OrganizerPortal from "./pages/OrganizerPortal";
 function Router() {
   // make sure to consider if you need authentication for certain routes
   return (
@@ -41,6 +42,7 @@ function Router() {
         <Route path={"/pasaporte-cairo-andes"} component={Pasaporte} />
         <Route path={"/mi-cuenta"} component={MiCuenta} />
         <Route path={"/recuperar-password/:token"} component={ResetPassword} />
+        <Route path={"/organizador"} component={OrganizerPortal} />
         <Route path={"/404"} component={NotFound} />
         <Route component={NotFound} />
       </Switch>

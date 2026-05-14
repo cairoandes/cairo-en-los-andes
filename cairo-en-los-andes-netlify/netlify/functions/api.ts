@@ -10,6 +10,10 @@
  *   GET  /api/verify-reset?token=...
  *   POST /api/reset-password
  *   GET  /api/init-db  (one-time setup)
+ *   GET  /api/organizer-me  (organizer session check)
+ *   GET  /api/organizer-participants  (list all registered accounts)
+ *   GET  /api/organizer-sheet?tab=...  (fetch a specific sheet tab)
+ *   GET  /api/organizer-tabs  (list available tabs)
  */
 import type { Context } from "@netlify/functions";
 import { initDb } from "./lib/db.js";
@@ -24,6 +28,7 @@ import {
   verifyParticipantCredentials,
   getParticipantByEmail,
   getParticipantById,
+  getAllParticipants,
 } from "./lib/participantDb.js";
 import { getParticipantDataByEmail } from "./lib/sheets.js";
 import {
@@ -36,6 +41,14 @@ import {
   errorResponse,
   corsPreflightResponse,
 } from "./lib/response.js";
+import {
+  fetchSheetTab,
+  getAvailableTabs,
+  type SheetTabName,
+} from "./lib/organizerSheets.js";
+
+// ── Organizer email (only this email can access organizer endpoints) ──
+const ORGANIZER_EMAIL = "cairoandesfestival@gmail.com";
 
 export default async function handler(req: Request, context: Context) {
   // Handle CORS preflight
@@ -70,6 +83,15 @@ export default async function handler(req: Request, context: Context) {
         return handleResetPassword(req);
       case "init-db":
         return handleInitDb();
+      // ── Organizer endpoints ──
+      case "organizer-me":
+        return handleOrganizerMe(req);
+      case "organizer-participants":
+        return handleOrganizerParticipants(req);
+      case "organizer-sheet":
+        return handleOrganizerSheet(req, url);
+      case "organizer-tabs":
+        return handleOrganizerTabs(req);
       default:
         return errorResponse("Not found", 404);
     }
@@ -78,6 +100,22 @@ export default async function handler(req: Request, context: Context) {
     const message = err instanceof Error ? err.message : "Internal server error";
     return errorResponse(message, 500);
   }
+}
+
+// ── Helper: verify organizer session ──
+async function verifyOrganizerSession(req: Request): Promise<{ isOrganizer: boolean; email?: string }> {
+  const cookieHeader = req.headers.get("cookie") || undefined;
+  const session = await getParticipantFromCookies(cookieHeader);
+
+  if (!session) {
+    return { isOrganizer: false };
+  }
+
+  if (session.email.toLowerCase() !== ORGANIZER_EMAIL) {
+    return { isOrganizer: false };
+  }
+
+  return { isOrganizer: true, email: session.email };
 }
 
 // ── Register ──
@@ -326,4 +364,68 @@ async function handleResetPassword(req: Request) {
 async function handleInitDb() {
   await initDb();
   return jsonResponse({ success: true, message: "Database tables created" });
+}
+
+// ══════════════════════════════════════════════════════════════
+// ORGANIZER ENDPOINTS (restricted to cairoandesfestival@gmail.com)
+// ══════════════════════════════════════════════════════════════
+
+// ── Organizer Me (check if current session is the organizer) ──
+async function handleOrganizerMe(req: Request) {
+  if (req.method !== "GET") return errorResponse("Method not allowed", 405);
+
+  const { isOrganizer, email } = await verifyOrganizerSession(req);
+
+  return jsonResponse({
+    isOrganizer,
+    email: email || null,
+  });
+}
+
+// ── Organizer Participants (list all registered accounts) ──
+async function handleOrganizerParticipants(req: Request) {
+  if (req.method !== "GET") return errorResponse("Method not allowed", 405);
+
+  const { isOrganizer } = await verifyOrganizerSession(req);
+  if (!isOrganizer) {
+    return errorResponse("ACCESS_DENIED", 403);
+  }
+
+  const participants = await getAllParticipants();
+  return jsonResponse({ participants });
+}
+
+// ── Organizer Sheet (fetch a specific tab) ──
+async function handleOrganizerSheet(req: Request, url: URL) {
+  if (req.method !== "GET") return errorResponse("Method not allowed", 405);
+
+  const { isOrganizer } = await verifyOrganizerSession(req);
+  if (!isOrganizer) {
+    return errorResponse("ACCESS_DENIED", 403);
+  }
+
+  const tab = url.searchParams.get("tab") as SheetTabName | null;
+  if (!tab) {
+    return errorResponse("tab parameter is required");
+  }
+
+  const availableTabs = getAvailableTabs();
+  if (!availableTabs.includes(tab)) {
+    return errorResponse(`Invalid tab: ${tab}. Available: ${availableTabs.join(", ")}`);
+  }
+
+  const data = await fetchSheetTab(tab);
+  return jsonResponse(data);
+}
+
+// ── Organizer Tabs (list available tabs) ──
+async function handleOrganizerTabs(req: Request) {
+  if (req.method !== "GET") return errorResponse("Method not allowed", 405);
+
+  const { isOrganizer } = await verifyOrganizerSession(req);
+  if (!isOrganizer) {
+    return errorResponse("ACCESS_DENIED", 403);
+  }
+
+  return jsonResponse({ tabs: getAvailableTabs() });
 }

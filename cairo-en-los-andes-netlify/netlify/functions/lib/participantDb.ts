@@ -110,6 +110,26 @@ export async function getParticipantById(
   return row ? rowToAccount(row) : null;
 }
 
+/**
+ * Get all participant accounts (for organizer dashboard).
+ */
+export async function getAllParticipants(): Promise<Omit<ParticipantAccount, 'passwordHash'>[]> {
+  const db = getDb();
+  const result = await db.execute(
+    "SELECT id, email, name, createdAt, updatedAt, lastSignedIn FROM participant_accounts ORDER BY createdAt DESC"
+  );
+
+  return result.rows.map((row) => ({
+    id: row.id as number,
+    email: row.email as string,
+    name: (row.name as string) || null,
+    createdAt: row.createdAt as string,
+    updatedAt: row.updatedAt as string,
+    lastSignedIn: row.lastSignedIn as string,
+    passwordHash: "", // excluded from query but type requires it
+  }));
+}
+
 function rowToAccount(row: Record<string, unknown>): ParticipantAccount {
   return {
     id: row.id as number,
