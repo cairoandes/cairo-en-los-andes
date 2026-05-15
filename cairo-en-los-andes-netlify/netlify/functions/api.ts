@@ -568,30 +568,36 @@ async function handleInscriptionSubmit(req: Request) {
     // Even if DB fails, continue — we'll still try Sheets
   }
 
-  // BACKGROUND TASKS: Google Sheets + WhatsApp + Referral
-  // Fire-and-forget: don't block the response. Netlify has a grace period after response.
+  // Run Google Sheets + WhatsApp + Referral in PARALLEL (not sequence) and await all
+  // Netlify kills the process on response return, so we MUST await before returning
   const ORGANIZER_SHEET_ID = "1-Ml74ABa2UkFxiDr6NqNNEXoRJD-Fuzwk_TziMntLN0";
 
-  // These run in background - errors are logged but don't affect the user
-  appendRowToSheet(ORGANIZER_SHEET_ID, "INSCRIPCIONES_WEB!A:BZ", row).catch(e => {
-    console.error("[Inscription] Google Sheets append failed:", e);
-  });
-  notifyNewInscription({
-    nombre: body.nombre,
-    apellido: body.apellido,
-    email: body.email,
-    paquete: body.paquete,
-    telefono: body.telefono,
-  }).catch(e => {
-    console.error("[WhatsApp] notification error:", e);
-  });
+  const tasks: Promise<any>[] = [
+    appendRowToSheet(ORGANIZER_SHEET_ID, "INSCRIPCIONES_WEB!A:BZ", row).catch(e => {
+      console.error("[Inscription] Google Sheets append failed:", e);
+    }),
+    notifyNewInscription({
+      nombre: body.nombre,
+      apellido: body.apellido,
+      email: body.email,
+      paquete: body.paquete,
+      telefono: body.telefono,
+    }).catch(e => {
+      console.error("[WhatsApp] notification error:", e);
+    }),
+  ];
+
   if (body.refCode) {
-    recordReferral(body.refCode, body.email, `${body.nombre} ${body.apellido}`).catch(e => {
-      console.error("[Referral] tracking failed:", e);
-    });
+    tasks.push(
+      recordReferral(body.refCode, body.email, `${body.nombre} ${body.apellido}`).catch(e => {
+        console.error("[Referral] tracking failed:", e);
+      })
+    );
   }
 
-  // Return immediately after DB save - user gets instant feedback
+  // Await all tasks in parallel - they run simultaneously so total time = slowest one (~3-4s)
+  await Promise.allSettled(tasks);
+
   return jsonResponse({ success: true, sheetSuccess: true, inscriptionId, whatsappSent: true });
 }
 

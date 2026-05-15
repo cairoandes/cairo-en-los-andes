@@ -228,13 +228,14 @@ export default function Inscripcion() {
     };
 
     try {
-      // Try with 15s timeout, retry once with 20s if it fails
+      // Try with 25s timeout, retry once with 35s if it fails
+      // Backend needs time for: DB save + Google Sheets + WhatsApp (all in parallel ~4-5s)
       let res: Response;
       try {
-        res = await attemptSubmit(15000);
+        res = await attemptSubmit(25000);
       } catch (firstErr: any) {
         console.warn("[Inscription] First attempt failed, retrying...", firstErr.name);
-        res = await attemptSubmit(20000);
+        res = await attemptSubmit(35000);
       }
 
       if (!res.ok) {
