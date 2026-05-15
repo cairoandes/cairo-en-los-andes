@@ -577,6 +577,15 @@ async function handleInscriptionSubmit(req: Request) {
     console.error("[Inscription] Failed to get inscription ID:", e);
   }
 
+  // Track referral if refCode is provided
+  if (body.refCode) {
+    try {
+      await recordReferral(body.refCode, body.email, `${body.nombre} ${body.apellido}`);
+    } catch (e) {
+      console.error("[Referral] tracking failed:", e);
+    }
+  }
+
   // Send WhatsApp notification to organizer
   let whatsappSent = false;
   try {

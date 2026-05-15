@@ -156,6 +156,9 @@ export default function Inscripcion() {
   const [paymentLoading, setPaymentLoading] = useState<string | null>(null);
   const [error, setError] = useState("");
 
+  // Capture referral code from URL
+  const refCode = new URLSearchParams(window.location.search).get("ref") || "";
+
   const update = (field: keyof FormData, value: string | boolean) => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
@@ -206,7 +209,7 @@ export default function Inscripcion() {
       const res = await fetch("/.netlify/functions/api/inscription-submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, refCode }),
       });
 
       if (!res.ok) {
