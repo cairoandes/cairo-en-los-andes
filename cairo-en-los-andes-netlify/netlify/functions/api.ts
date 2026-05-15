@@ -568,10 +568,10 @@ const PAQUETE_LABELS: Record<string, string> = {
   paquete2: "Paquete 2 \u2013 Hotel Boutique (USD 240)",
   paquete3: "Paquete 3 \u2013 Sheraton (USD 680)",
   // Galas
-  gala_opening: "Opening Gala \u2013 Entrada (USD 100)",
+  gala_opening: "Opening Gala \u2013 Entrada (USD 70)",
   gala_cairoandes: "Gala Cairo Andes \u2013 Entrada (USD 20)",
   gala_closing: "Closing Gala \u2013 Entrada (USD 25)",
-  gala_combo: "Combo 3 Galas \u2013 Promo (USD 120)",
+  gala_combo: "Combo 3 Galas \u2013 Promo (USD 90)",
   // Sponsors
   sponsor_bronce: "Sponsor Bronce (USD 100)",
   sponsor_plata: "Sponsor Plata (USD 200)",
@@ -583,10 +583,10 @@ const PAQUETE_PRICES_USD: Record<string, string> = {
   paquete2: "240.00",
   paquete3: "680.00",
   // Galas
-  gala_opening: "100.00",
+  gala_opening: "70.00",
   gala_cairoandes: "20.00",
   gala_closing: "25.00",
-  gala_combo: "120.00",
+  gala_combo: "90.00",
   // Sponsors
   sponsor_bronce: "100.00",
   sponsor_plata: "200.00",
@@ -598,10 +598,10 @@ const PAQUETE_PRICES_USD_NUM: Record<string, number> = {
   paquete2: 240,
   paquete3: 680,
   // Galas
-  gala_opening: 100,
+  gala_opening: 70,
   gala_cairoandes: 20,
   gala_closing: 25,
-  gala_combo: 120,
+  gala_combo: 90,
   // Sponsors
   sponsor_bronce: 100,
   sponsor_plata: 200,

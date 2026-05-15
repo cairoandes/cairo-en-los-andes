@@ -18,12 +18,12 @@ const galasES = [
     day: "Viernes 16 de Octubre",
     icon: Star,
     color: "#d4a843",
-    price: 100,
+    price: 70,
     productKey: "gala_opening",
     description:
       "La noche que da inicio al festival más esperado. Una velada elegante con cena show, presentaciones de los maestros internacionales y la icónica alfombra roja donde cada asistente se convierte en protagonista.",
     highlights: [
-      { icon: UtensilsCrossed, text: "Cena Show de gala" },
+      { icon: UtensilsCrossed, text: "Cena Show Open Buffet — Bebida y comida incluida" },
       { icon: Theater, text: "Presentación de maestros internacionales" },
       { icon: Camera, text: "Alfombra roja y sesión fotográfica" },
       { icon: Music, text: "Shows en vivo" },
@@ -72,12 +72,12 @@ const galasEN = [
     day: "Friday, October 16th",
     icon: Star,
     color: "#d4a843",
-    price: 100,
+    price: 70,
     productKey: "gala_opening",
     description:
       "The night that kicks off the most anticipated festival. An elegant evening with a dinner show, presentations by international masters, and the iconic red carpet where every attendee becomes the protagonist.",
     highlights: [
-      { icon: UtensilsCrossed, text: "Gala dinner show" },
+      { icon: UtensilsCrossed, text: "Open Buffet Dinner Show — Drinks & food included" },
       { icon: Theater, text: "International masters presentation" },
       { icon: Camera, text: "Red carpet and photo session" },
       { icon: Music, text: "Live shows" },
@@ -215,6 +215,13 @@ export default function GalasPage() {
                           })}
                         </div>
 
+                        {/* Included in package note */}
+                        <p className="text-xs text-[#d4a843]/70 italic text-center mb-4">
+                          {lang === "es"
+                            ? "Si ya compraste un paquete del festival, todas las galas están incluidas."
+                            : "If you already purchased a festival package, all galas are included."}
+                        </p>
+
                         {/* Payment buttons */}
                         <div className="border-t border-[#faf5eb]/10 pt-6">
                           <p className="text-sm text-[#faf5eb]/60 mb-2 text-center font-medium">
@@ -254,8 +261,8 @@ export default function GalasPage() {
                   </p>
 
                   <div className="flex items-center justify-center gap-4 mb-6">
-                    <span className="text-[#faf5eb]/40 line-through text-xl">$145</span>
-                    <span className="font-heading text-5xl font-bold gold-text">$120</span>
+                    <span className="text-[#faf5eb]/40 line-through text-xl">$115</span>
+                    <span className="font-heading text-5xl font-bold gold-text">$90</span>
                     <span className="text-[#faf5eb]/50 text-sm uppercase">USD</span>
                   </div>
 
@@ -263,7 +270,7 @@ export default function GalasPage() {
                     {lang === "es" ? "¡Ahorrás $25 USD!" : "You save $25 USD!"}
                   </p>
 
-                  <PaymentButtons productKey="gala_combo" priceUSD={120} />
+                  <PaymentButtons productKey="gala_combo" priceUSD={90} />
                 </div>
               </div>
             </div>
