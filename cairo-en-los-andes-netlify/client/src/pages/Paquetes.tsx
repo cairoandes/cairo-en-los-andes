@@ -123,18 +123,7 @@ export default function Paquetes() {
                     <p className="text-xs text-[#faf5eb]/40 mb-4">
                       {t(lang, "paquetesFinancing")} {p.financing}
                     </p>
-                    <a
-                      href="https://wa.me/5493873267777"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={`w-full text-center py-3 rounded text-sm font-bold uppercase tracking-wider transition-all duration-300 block ${
-                        p.highlight
-                          ? "bg-gradient-to-r from-[#d4a843] to-[#e8842a] text-[#080c1a] hover:shadow-lg hover:shadow-[#d4a843]/20"
-                          : "border border-[#d4a843]/40 text-[#d4a843] hover:bg-[#d4a843]/10"
-                      }`}
-                    >
-                      {t(lang, "paquetesCta")}
-                    </a>
+                    <DualCTA size="sm" />
                   </div>
                 </div>
               </AnimateOnScroll>
