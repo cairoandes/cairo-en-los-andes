@@ -48,7 +48,10 @@ import {
 } from "./lib/organizerSheets.js";
 
 // ── Organizer email (only this email can access organizer endpoints) ──
-const ORGANIZER_EMAIL = "cairoandesfestival@gmail.com";
+const ORGANIZER_EMAILS = [
+  "cairoandesfestival@gmail.com",
+  "khalilthedancer@gmail.com",
+];
 
 export default async function handler(req: Request, context: Context) {
   // Handle CORS preflight
@@ -124,7 +127,7 @@ async function verifyOrganizerSession(req: Request): Promise<{ isOrganizer: bool
     return { isOrganizer: false };
   }
 
-  if (session.email.toLowerCase() !== ORGANIZER_EMAIL) {
+  if (!ORGANIZER_EMAILS.includes(session.email.toLowerCase())) {
     return { isOrganizer: false };
   }
 
