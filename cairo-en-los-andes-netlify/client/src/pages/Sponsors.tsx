@@ -9,6 +9,7 @@ import Footer from "@/components/Footer";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
 import { ArrowLeft, Star, Zap, Crown, CheckCircle, Globe, Users, TrendingUp, MessageCircle } from "lucide-react";
 import { Link } from "wouter";
+import PaymentButtons from "@/components/PaymentButtons";
 
 const rubrosES = [
   "Belleza", "Estética", "Maquillaje", "Peluquería", "Indumentaria", "Danza",
@@ -40,6 +41,8 @@ const packsES = [
   {
     name: "Bronce",
     price: "$100",
+    priceNum: 100,
+    productKey: "sponsor_bronce",
     icon: Star,
     color: "#cd7f32",
     features: [
@@ -52,6 +55,8 @@ const packsES = [
   {
     name: "Plata",
     price: "$200",
+    priceNum: 200,
+    productKey: "sponsor_plata",
     icon: Zap,
     color: "#c0c0c0",
     features: [
@@ -66,6 +71,8 @@ const packsES = [
   {
     name: "Oro",
     price: "$300",
+    priceNum: 300,
+    productKey: "sponsor_oro",
     icon: Crown,
     color: "#d4a843",
     features: [
@@ -83,6 +90,8 @@ const packsEN = [
   {
     name: "Bronze",
     price: "$100",
+    priceNum: 100,
+    productKey: "sponsor_bronce",
     icon: Star,
     color: "#cd7f32",
     features: [
@@ -95,6 +104,8 @@ const packsEN = [
   {
     name: "Silver",
     price: "$200",
+    priceNum: 200,
+    productKey: "sponsor_plata",
     icon: Zap,
     color: "#c0c0c0",
     features: [
@@ -109,6 +120,8 @@ const packsEN = [
   {
     name: "Gold",
     price: "$300",
+    priceNum: 300,
+    productKey: "sponsor_oro",
     icon: Crown,
     color: "#d4a843",
     features: [
@@ -299,9 +312,13 @@ export default function Sponsors() {
                     </ul>
                     <p className="text-xs text-[#faf5eb]/40 mt-4 text-center italic">
                       {lang === "es"
-                        ? "El pago se realiza en pesos argentinos al precio oficial del día. Plan de pago disponible."
+                        ? "El pago se realiza en pesos argentinos al precio oficial del d\u00eda. Plan de pago disponible."
                         : "Payment is made in Argentine pesos at the official exchange rate. Payment plan available."}
                     </p>
+                    {/* Payment buttons */}
+                    <div className="border-t border-[#faf5eb]/10 pt-4 mt-4">
+                      <PaymentButtons productKey={pack.productKey} priceUSD={pack.priceNum} />
+                    </div>
                   </div>
                 </AnimateOnScroll>
               );
@@ -341,7 +358,7 @@ export default function Sponsors() {
                 : "Contact us to reserve your spot as an official sponsor of Cairo in the Andes 2026."}
             </p>
             <a
-              href="https://wa.me/5493872617777?text=Hola%2C%20quiero%20información%20sobre%20sponsoreo%20en%20Cairo%20Andes%202026"
+              href="https://wa.me/5493873267777?text=Hola%2C%20quiero%20información%20sobre%20sponsoreo%20en%20Cairo%20Andes%202026"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-[#d4a843] to-[#b8922e] text-[#080c1a] font-bold rounded-lg hover:shadow-[0_0_30px_rgba(212,168,67,0.3)] transition-all duration-300 text-lg"
@@ -350,7 +367,7 @@ export default function Sponsors() {
               {lang === "es" ? "Quiero ser Sponsor" : "I want to be a Sponsor"}
             </a>
             <div className="mt-6 text-[#faf5eb]/50 text-sm space-y-1">
-              <p>WhatsApp: +54 9 387 261 7777</p>
+              <p>WhatsApp: +54 9 3873 26-7777</p>
               <p>Email: cairoandesfestival@gmail.com</p>
               <p>Instagram: @cairo_andes_festival</p>
             </div>

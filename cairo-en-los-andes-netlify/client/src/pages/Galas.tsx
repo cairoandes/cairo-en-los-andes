@@ -1,12 +1,14 @@
 /*
  * ── Design: Cinematic Dark + Gold ──
  * Galas page — The 3 galas of Cairo en los Andes 2026
+ * Now with payment buttons (PayPal/MercadoPago/WhatsApp) per card + combo promo
  */
 import { useLang } from "@/contexts/LanguageContext";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
-import { ArrowLeft, Sparkles, Star, Crown, Award, Theater, UtensilsCrossed, Camera, Music, Trophy } from "lucide-react";
+import PaymentButtons from "@/components/PaymentButtons";
+import { ArrowLeft, Sparkles, Star, Crown, Award, Theater, UtensilsCrossed, Camera, Music, Trophy, Gift } from "lucide-react";
 import { Link } from "wouter";
 
 const galasES = [
@@ -16,6 +18,8 @@ const galasES = [
     day: "Viernes 16 de Octubre",
     icon: Star,
     color: "#d4a843",
+    price: 100,
+    productKey: "gala_opening",
     description:
       "La noche que da inicio al festival más esperado. Una velada elegante con cena show, presentaciones de los maestros internacionales y la icónica alfombra roja donde cada asistente se convierte en protagonista.",
     highlights: [
@@ -31,6 +35,8 @@ const galasES = [
     day: "Sábado 17 de Octubre",
     icon: Crown,
     color: "#e8842a",
+    price: 20,
+    productKey: "gala_cairoandes",
     description:
       "El corazón del festival. La gala principal de Cairo en los Andes reúne lo mejor de la danza oriental en una noche mágica con performances de los artistas más destacados del mundo, shows grupales y momentos inolvidables.",
     highlights: [
@@ -46,6 +52,8 @@ const galasES = [
     day: "Domingo 18 de Octubre",
     icon: Trophy,
     color: "#d4a843",
+    price: 25,
+    productKey: "gala_closing",
     description:
       "La gran noche de cierre donde se coronan las ganadoras de la competencia oficial. Ceremonia de premiación, últimos shows y la despedida de un festival inolvidable. Aquí se entrega el título de Reina Cairo Andes y el viaje a Egipto.",
     highlights: [
@@ -64,6 +72,8 @@ const galasEN = [
     day: "Friday, October 16th",
     icon: Star,
     color: "#d4a843",
+    price: 100,
+    productKey: "gala_opening",
     description:
       "The night that kicks off the most anticipated festival. An elegant evening with a dinner show, presentations by international masters, and the iconic red carpet where every attendee becomes the protagonist.",
     highlights: [
@@ -79,6 +89,8 @@ const galasEN = [
     day: "Saturday, October 17th",
     icon: Crown,
     color: "#e8842a",
+    price: 20,
+    productKey: "gala_cairoandes",
     description:
       "The heart of the festival. The main Cairo in the Andes gala brings together the best of oriental dance in a magical night with performances by the world's most renowned artists, group shows, and unforgettable moments.",
     highlights: [
@@ -94,6 +106,8 @@ const galasEN = [
     day: "Sunday, October 18th",
     icon: Trophy,
     color: "#d4a843",
+    price: 25,
+    productKey: "gala_closing",
     description:
       "The grand closing night where the winners of the official competition are crowned. Awards ceremony, final shows, and the farewell of an unforgettable festival. Here the Cairo Andes Queen title and the trip to Egypt are awarded.",
     highlights: [
@@ -167,7 +181,7 @@ export default function GalasPage() {
                             style={{ backgroundColor: `${gala.color}15`, border: `2px solid ${gala.color}40` }}>
                             <GalaIcon size={28} style={{ color: gala.color }} />
                           </div>
-                          <div className="text-center md:text-left">
+                          <div className="text-center md:text-left flex-1">
                             <p className="text-xs uppercase tracking-[0.2em] mb-1" style={{ color: gala.color }}>
                               {gala.day}
                             </p>
@@ -175,6 +189,11 @@ export default function GalasPage() {
                               {gala.name}
                             </h2>
                             <p className="text-[#faf5eb]/50 text-sm mt-1">{gala.subtitle}</p>
+                          </div>
+                          {/* Price badge */}
+                          <div className="text-center md:text-right shrink-0">
+                            <p className="font-heading text-3xl font-bold gold-text">${gala.price}</p>
+                            <p className="text-xs text-[#faf5eb]/50 uppercase">USD</p>
                           </div>
                         </div>
 
@@ -184,7 +203,7 @@ export default function GalasPage() {
                         </p>
 
                         {/* Highlights */}
-                        <div className="grid sm:grid-cols-2 gap-4">
+                        <div className="grid sm:grid-cols-2 gap-4 mb-6">
                           {gala.highlights.map((h, j) => {
                             const HIcon = h.icon;
                             return (
@@ -195,6 +214,14 @@ export default function GalasPage() {
                             );
                           })}
                         </div>
+
+                        {/* Payment buttons */}
+                        <div className="border-t border-[#faf5eb]/10 pt-6">
+                          <p className="text-sm text-[#faf5eb]/60 mb-2 text-center font-medium">
+                            {lang === "es" ? "Comprá tu entrada:" : "Buy your ticket:"}
+                          </p>
+                          <PaymentButtons productKey={gala.productKey} priceUSD={gala.price} />
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -203,23 +230,42 @@ export default function GalasPage() {
             })}
           </div>
 
-          {/* CTA */}
+          {/* ═══ PROMO COMBO 3 GALAS ═══ */}
           <AnimateOnScroll direction="up" delay={200}>
-            <div className="text-center mt-16">
-              <p className="text-[#faf5eb]/50 mb-4 text-sm">
-                {lang === "es"
-                  ? "Las galas tienen un costo de USD $100 por cubierto"
-                  : "Galas are priced at USD $100 per seat"}
-              </p>
-              <a
-                href="https://wa.me/5493872617777?text=Hola%2C%20quiero%20reservar%20mi%20lugar%20en%20las%20galas%20de%20Cairo%20Andes%202026"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-[#d4a843] to-[#b8922e] text-[#080c1a] font-bold rounded-lg hover:shadow-[0_0_30px_rgba(212,168,67,0.3)] transition-all duration-300 text-lg"
-              >
-                <UtensilsCrossed size={20} />
-                {lang === "es" ? "Reservá tu lugar" : "Reserve your seat"}
-              </a>
+            <div className="max-w-4xl mx-auto mt-20">
+              <div className="relative rounded-2xl overflow-hidden border-2 border-[#d4a843]/50 bg-gradient-to-br from-[#1a1520] via-[#0d1230] to-[#1a1520] shadow-[0_0_60px_rgba(212,168,67,0.15)]">
+                {/* Promo banner */}
+                <div className="bg-gradient-to-r from-[#d4a843] to-[#e8842a] text-[#080c1a] text-center py-3">
+                  <span className="text-sm font-bold uppercase tracking-widest flex items-center justify-center gap-2">
+                    <Gift size={16} />
+                    {lang === "es" ? "PROMOCIÓN ESPECIAL" : "SPECIAL PROMOTION"}
+                    <Gift size={16} />
+                  </span>
+                </div>
+
+                <div className="p-8 md:p-12 text-center">
+                  <h3 className="font-heading text-2xl md:text-3xl font-bold gold-text mb-3">
+                    {lang === "es" ? "Combo 3 Galas" : "3 Galas Combo"}
+                  </h3>
+                  <p className="text-[#faf5eb]/60 mb-6 max-w-lg mx-auto">
+                    {lang === "es"
+                      ? "Asistí a las 3 noches del festival con un precio especial. Opening Gala + Gala Cairo Andes + Closing Gala."
+                      : "Attend all 3 festival nights at a special price. Opening Gala + Cairo Andes Gala + Closing Gala."}
+                  </p>
+
+                  <div className="flex items-center justify-center gap-4 mb-6">
+                    <span className="text-[#faf5eb]/40 line-through text-xl">$145</span>
+                    <span className="font-heading text-5xl font-bold gold-text">$120</span>
+                    <span className="text-[#faf5eb]/50 text-sm uppercase">USD</span>
+                  </div>
+
+                  <p className="text-sm text-[#25D366] font-medium mb-4">
+                    {lang === "es" ? "¡Ahorrás $25 USD!" : "You save $25 USD!"}
+                  </p>
+
+                  <PaymentButtons productKey="gala_combo" priceUSD={120} />
+                </div>
+              </div>
             </div>
           </AnimateOnScroll>
         </div>
