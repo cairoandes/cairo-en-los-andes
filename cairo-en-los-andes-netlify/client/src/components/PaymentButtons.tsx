@@ -63,7 +63,7 @@ export default function PaymentButtons({ productKey, priceUSD, className = "" }:
     setLoading(true);
 
     try {
-      const res = await fetch("/.netlify/functions/api/direct-purchase", {
+      const res = await fetch("/api/direct-purchase", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

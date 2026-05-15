@@ -30,7 +30,7 @@ export default function PagoExitoso() {
       markedRef.current = true;
       const id = parseInt(purchaseId, 10);
       if (!isNaN(id) && id > 0) {
-        fetch("/.netlify/functions/api/direct-purchase-mark-paid", {
+        fetch("/api/direct-purchase-mark-paid", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ purchaseId: id }),

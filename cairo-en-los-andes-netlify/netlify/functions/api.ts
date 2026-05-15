@@ -468,7 +468,15 @@ async function handleOrganizerTabs(req: Request) {
 async function handleInscriptionSubmit(req: Request) {
   if (req.method !== "POST") return errorResponse("Method not allowed", 405);
 
-  const body = await req.json();
+  await initDb();
+
+  let body: any;
+  try {
+    body = await req.json();
+  } catch (e) {
+    console.error("[Inscription] Failed to parse JSON body:", e);
+    return errorResponse("Invalid request body", 400);
+  }
 
   // Validate required fields
   if (!body.nombre || !body.apellido || !body.email || !body.paquete) {

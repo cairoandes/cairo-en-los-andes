@@ -3,7 +3,7 @@
  * Multi-step form with conditional sections based on PDF structure.
  * Submits to Google Sheets and shows payment options (PayPal USD / MercadoPago ARS).
  */
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useLang } from "@/contexts/LanguageContext";
@@ -156,8 +156,11 @@ export default function Inscripcion() {
   const [paymentLoading, setPaymentLoading] = useState<string | null>(null);
   const [error, setError] = useState("");
 
-  // Capture referral code from URL
-  const refCode = new URLSearchParams(window.location.search).get("ref") || "";
+  // Capture referral code from URL (stable reference)
+  const refCode = useMemo(() => {
+    try { return new URLSearchParams(window.location.search).get("ref") || ""; }
+    catch { return ""; }
+  }, []);
 
   const update = (field: keyof FormData, value: string | boolean) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -206,21 +209,25 @@ export default function Inscripcion() {
     setSubmitting(true);
 
     try {
-      const res = await fetch("/.netlify/functions/api/inscription-submit", {
+      const payload = { ...form, refCode };
+      const res = await fetch("/api/inscription-submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, refCode }),
+        body: JSON.stringify(payload),
       });
 
       if (!res.ok) {
-        throw new Error("Submit failed");
+        const errText = await res.text().catch(() => "");
+        console.error("[Inscription] Server error:", res.status, errText);
+        throw new Error(`Submit failed: ${res.status}`);
       }
 
       const data = await res.json();
       const id = data?.inscriptionId;
       setInscriptionId(id || null);
       setSubmitted(true);
-    } catch (err) {
+    } catch (err: any) {
+      console.error("[Inscription] Submit error:", err);
       setError(lang === "es" ? "Error al enviar. Intentá de nuevo." : "Submission error. Please try again.");
     } finally {
       setSubmitting(false);
@@ -259,7 +266,7 @@ export default function Inscripcion() {
                     if (!inscriptionId) return;
                     setPaymentLoading("paypal");
                     try {
-                      const res = await fetch("/.netlify/functions/api/paypal-create", {
+                      const res = await fetch("/api/paypal-create", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ inscriptionId, paquete: form.paquete, origin: window.location.origin }),
@@ -297,7 +304,7 @@ export default function Inscripcion() {
                     if (!inscriptionId) return;
                     setPaymentLoading("mercadopago");
                     try {
-                      const res = await fetch("/.netlify/functions/api/mp-create", {
+                      const res = await fetch("/api/mp-create", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ inscriptionId, paquete: form.paquete, email: form.email, origin: window.location.origin }),
