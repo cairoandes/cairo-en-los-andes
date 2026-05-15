@@ -183,12 +183,14 @@ export default function Inscripcion() {
   const goNext = () => {
     if (!isLastStep) {
       setStep(visibleSteps[currentStepIndex + 1]);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
   const goPrev = () => {
     if (!isFirstStep) {
       setStep(visibleSteps[currentStepIndex - 1]);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
@@ -201,11 +203,11 @@ export default function Inscripcion() {
     setSubmitting(true);
 
     try {
-      const res = await fetch("/.netlify/functions/api/inscription-submit", {
+      const res = await fetch("/api/trpc/inscription.submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify(form),
+        body: JSON.stringify({ json: form }),
       });
 
       if (!res.ok) {
@@ -213,7 +215,7 @@ export default function Inscripcion() {
       }
 
       const data = await res.json();
-      const id = data?.inscriptionId;
+      const id = data?.result?.data?.json?.inscriptionId || data?.result?.data?.inscriptionId;
       setInscriptionId(id || null);
       setSubmitted(true);
     } catch (err) {
@@ -255,14 +257,14 @@ export default function Inscripcion() {
                     if (!inscriptionId) return;
                     setPaymentLoading("paypal");
                     try {
-                      const res = await fetch("/.netlify/functions/api/paypal-create", {
+                      const res = await fetch("/api/trpc/inscription.createPaypalOrder", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         credentials: "include",
-                        body: JSON.stringify({ inscriptionId, paquete: form.paquete, origin: window.location.origin }),
+                        body: JSON.stringify({ json: { inscriptionId, paquete: form.paquete, origin: window.location.origin } }),
                       });
                       const data = await res.json();
-                      const approvalUrl = data?.approvalUrl;
+                      const approvalUrl = data?.result?.data?.json?.approvalUrl || data?.result?.data?.approvalUrl;
                       if (approvalUrl) {
                         window.location.href = approvalUrl;
                       } else {
@@ -294,14 +296,14 @@ export default function Inscripcion() {
                     if (!inscriptionId) return;
                     setPaymentLoading("mercadopago");
                     try {
-                      const res = await fetch("/.netlify/functions/api/mp-create", {
+                      const res = await fetch("/api/trpc/inscription.createMPPreference", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         credentials: "include",
-                        body: JSON.stringify({ inscriptionId, paquete: form.paquete, email: form.email, origin: window.location.origin }),
+                        body: JSON.stringify({ json: { inscriptionId, paquete: form.paquete, email: form.email, origin: window.location.origin } }),
                       });
                       const data = await res.json();
-                      const initPoint = data?.initPoint;
+                      const initPoint = data?.result?.data?.json?.initPoint || data?.result?.data?.initPoint;
                       if (initPoint) {
                         window.location.href = initPoint;
                       } else {
@@ -380,7 +382,7 @@ export default function Inscripcion() {
             return (
               <button
                 key={s}
-                onClick={() => setStep(s)}
+                onClick={() => { setStep(s); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                 className={`flex flex-col items-center gap-1 px-2 py-1 rounded-lg transition-all min-w-[60px] ${
                   isActive
                     ? "text-[#d4a843]"
