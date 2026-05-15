@@ -569,39 +569,29 @@ async function handleInscriptionSubmit(req: Request) {
   }
 
   // BACKGROUND TASKS: Google Sheets + WhatsApp + Referral
-  // Use waitUntil pattern — fire these off but don't block the response
+  // Fire-and-forget: don't block the response. Netlify has a grace period after response.
   const ORGANIZER_SHEET_ID = "1-Ml74ABa2UkFxiDr6NqNNEXoRJD-Fuzwk_TziMntLN0";
 
-  const backgroundTasks = Promise.allSettled([
-    // Google Sheets
-    appendRowToSheet(ORGANIZER_SHEET_ID, "INSCRIPCIONES_WEB!A:BZ", row).catch(e => {
-      console.error("[Inscription] Google Sheets append failed:", e);
-    }),
-    // WhatsApp notification
-    notifyNewInscription({
-      nombre: body.nombre,
-      apellido: body.apellido,
-      email: body.email,
-      paquete: body.paquete,
-      telefono: body.telefono,
-    }).catch(e => {
-      console.error("[WhatsApp] notification error:", e);
-    }),
-    // Referral tracking
-    body.refCode
-      ? recordReferral(body.refCode, body.email, `${body.nombre} ${body.apellido}`).catch(e => {
-          console.error("[Referral] tracking failed:", e);
-        })
-      : Promise.resolve(),
-  ]);
+  // These run in background - errors are logged but don't affect the user
+  appendRowToSheet(ORGANIZER_SHEET_ID, "INSCRIPCIONES_WEB!A:BZ", row).catch(e => {
+    console.error("[Inscription] Google Sheets append failed:", e);
+  });
+  notifyNewInscription({
+    nombre: body.nombre,
+    apellido: body.apellido,
+    email: body.email,
+    paquete: body.paquete,
+    telefono: body.telefono,
+  }).catch(e => {
+    console.error("[WhatsApp] notification error:", e);
+  });
+  if (body.refCode) {
+    recordReferral(body.refCode, body.email, `${body.nombre} ${body.apellido}`).catch(e => {
+      console.error("[Referral] tracking failed:", e);
+    });
+  }
 
-  // Use Netlify's background execution: wait max 3 seconds for background tasks
-  // If they don't finish, the response still goes out
-  await Promise.race([
-    backgroundTasks,
-    new Promise(resolve => setTimeout(resolve, 3000)),
-  ]);
-
+  // Return immediately after DB save - user gets instant feedback
   return jsonResponse({ success: true, sheetSuccess: true, inscriptionId, whatsappSent: true });
 }
 
