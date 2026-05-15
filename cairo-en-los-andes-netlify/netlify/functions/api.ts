@@ -16,7 +16,7 @@
  *   GET  /api/organizer-tabs  (list available tabs)
  */
 import type { Context } from "@netlify/functions";
-import { initDb } from "./lib/db.js";
+import { initDb, getDb } from "./lib/db.js";
 import {
   createParticipantSessionToken,
   getParticipantFromCookies,
@@ -83,6 +83,14 @@ export default async function handler(req: Request, context: Context) {
         return handleResetPassword(req);
       case "init-db":
         return handleInitDb();
+      // ── Inscription endpoint ──
+      case "inscription-submit":
+        return handleInscriptionSubmit(req);
+      // ── Payment endpoints ──
+      case "paypal-create":
+        return handlePaypalCreate(req);
+      case "mp-create":
+        return handleMPCreate(req);
       // ── Organizer endpoints ──
       case "organizer-me":
         return handleOrganizerMe(req);
@@ -428,4 +436,306 @@ async function handleOrganizerTabs(req: Request) {
   }
 
   return jsonResponse({ tabs: getAvailableTabs() });
+}
+
+// ── Inscription Submit ──
+async function handleInscriptionSubmit(req: Request) {
+  if (req.method !== "POST") return errorResponse("Method not allowed", 405);
+
+  const body = await req.json();
+
+  // Validate required fields
+  if (!body.nombre || !body.apellido || !body.email || !body.paquete) {
+    return errorResponse("Missing required fields", 400);
+  }
+
+  // Map package keys to labels
+  const paqueteLabels: Record<string, string> = {
+    paquete1: "Paquete 1 – Sin hotel (USD 179)",
+    paquete2: "Paquete 2 – Hotel Boutique (USD 240)",
+    paquete3: "Paquete 3 – Sheraton (USD 680)",
+  };
+
+  // Map participation keys to labels
+  const participacionLabels: Record<string, string> = {
+    gala: "Solo Gala",
+    competencia: "Solo Competencia",
+    gala_competencia: "Gala + Competencia",
+  };
+
+  // Build a row for Google Sheets
+  const timestamp = new Date().toISOString().slice(0, 19).replace("T", " ");
+  const row = [
+    timestamp,
+    body.nombre || "",
+    body.apellido || "",
+    body.nombreArtistico || "",
+    body.fechaNacimiento || "",
+    body.nacionalidad || "",
+    body.ciudadResidencia || "",
+    body.email || "",
+    body.telefono || "",
+    body.instagram || "",
+    body.facebook || "",
+    paqueteLabels[body.paquete] || body.paquete || "",
+    body.confirmaPaquete ? "Sí" : "No",
+    participacionLabels[body.participacion] || body.participacion || "",
+    body.cantidadNumeros || "",
+    // Gala 1-3
+    body.gala1Tipo || "", body.gala1Bailarines || "", body.gala1Titulo || "", body.gala1Estilo || "", body.gala1Duracion || "",
+    body.gala2Tipo || "", body.gala2Bailarines || "", body.gala2Titulo || "", body.gala2Estilo || "", body.gala2Duracion || "",
+    body.gala3Tipo || "", body.gala3Bailarines || "", body.gala3Titulo || "", body.gala3Estilo || "", body.gala3Duracion || "",
+    // Comp 1-3
+    body.comp1Nivel || "", body.comp1Tipo || "", body.comp1Bailarines || "", body.comp1Estilo || "", body.comp1Titulo || "", body.comp1Duracion || "",
+    body.comp2Nivel || "", body.comp2Tipo || "", body.comp2Bailarines || "", body.comp2Estilo || "", body.comp2Titulo || "", body.comp2Duracion || "",
+    body.comp3Nivel || "", body.comp3Tipo || "", body.comp3Bailarines || "", body.comp3Estilo || "", body.comp3Titulo || "", body.comp3Duracion || "",
+    // Acompañante
+    body.tieneAcompanante || "no", body.cantidadAcompanantes || "", body.relacionAcompanante || "",
+    body.acompananteGala ? "Sí" : "No", body.acompananteHotel ? "Sí" : "No", body.acompananteNoParticipa ? "Sí" : "No",
+    // Hotel
+    body.tipoHabitacion || "", body.solicitaCambioHabitacion ? "Sí" : "No",
+    body.nochesExtra || "no", body.cantidadNochesExtra || "", body.modalidadHabitacion || "",
+    // Grupo
+    body.nombreEscuela || "", body.nombreDirector || "", body.cantidadBailarines || "",
+    // Logística
+    body.infoTraslados ? "Sí" : "No", body.infoTurismo ? "Sí" : "No",
+    // Confirmación
+    body.confirmaDatos ? "Sí" : "No", body.aceptaTerminos ? "Sí" : "No", body.nombreCompletoFirma || "",
+  ];
+
+  // Try to append to Google Sheets (05_RESPUESTAS tab)
+  const apiKey = process.env.GOOGLE_API_KEY;
+  const ORGANIZER_SHEET_ID = "1-Ml74ABa2UkFxiDr6NqNNEXoRJD-Fuzwk_TziMntLN0";
+
+  let sheetSuccess = false;
+  if (apiKey) {
+    try {
+      const appendUrl = `https://sheets.googleapis.com/v4/spreadsheets/${ORGANIZER_SHEET_ID}/values/05_RESPUESTAS!A:BZ:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS&key=${apiKey}`;
+      const sheetRes = await fetch(appendUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ values: [row] }),
+      });
+      sheetSuccess = sheetRes.ok;
+    } catch (e) {
+      console.error("[Inscription] Google Sheets append failed:", e);
+    }
+  }
+
+  // Also save to local DB
+  try {
+    const db = getDb();
+    await db.execute({
+      sql: `INSERT INTO inscriptions (email, nombre, apellido, paquete, participacion, form_data, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      args: [
+        body.email,
+        body.nombre,
+        body.apellido,
+        body.paquete,
+        body.participacion || "",
+        JSON.stringify(body),
+        Date.now(),
+      ],
+    });
+  } catch (e) {
+    console.error("[Inscription] DB insert failed:", e);
+  }
+
+  // Get the last inserted ID
+  let inscriptionId: number | null = null;
+  try {
+    const db2 = getDb();
+    const lastRow = await db2.execute({
+      sql: `SELECT id FROM inscriptions WHERE email = ? ORDER BY id DESC LIMIT 1`,
+      args: [body.email],
+    });
+    if (lastRow.rows.length > 0) {
+      inscriptionId = Number(lastRow.rows[0].id);
+    }
+  } catch (e) {
+    console.error("[Inscription] Failed to get inscription ID:", e);
+  }
+
+  return jsonResponse({ success: true, sheetSuccess, inscriptionId });
+}
+
+// ══════════════════════════════════════════════════════════════
+// PAYMENT ENDPOINTS
+// ══════════════════════════════════════════════════════════════
+
+const PAQUETE_LABELS: Record<string, string> = {
+  paquete1: "Paquete 1 \u2013 Sin hotel (USD 179)",
+  paquete2: "Paquete 2 \u2013 Hotel Boutique (USD 240)",
+  paquete3: "Paquete 3 \u2013 Sheraton (USD 680)",
+};
+
+const PAQUETE_PRICES_USD: Record<string, string> = {
+  paquete1: "179.00",
+  paquete2: "240.00",
+  paquete3: "680.00",
+};
+
+const PAQUETE_PRICES_USD_NUM: Record<string, number> = {
+  paquete1: 179,
+  paquete2: 240,
+  paquete3: 680,
+};
+
+// ── PayPal Create Order ──
+async function handlePaypalCreate(req: Request) {
+  if (req.method !== "POST") return errorResponse("Method not allowed", 405);
+
+  const body = await req.json();
+  const { inscriptionId, paquete, origin } = body;
+
+  if (!inscriptionId || !paquete || !origin) {
+    return errorResponse("Missing required fields", 400);
+  }
+
+  const amount = PAQUETE_PRICES_USD[paquete] || "179.00";
+  const description = PAQUETE_LABELS[paquete] || "Cairo en los Andes Festival";
+
+  const clientId = process.env.PAYPAL_CLIENT_ID;
+  const secret = process.env.PAYPAL_SECRET;
+
+  if (!clientId || !secret) {
+    return errorResponse("PayPal not configured", 500);
+  }
+
+  // Get PayPal access token
+  const tokenRes = await fetch("https://api-m.paypal.com/v1/oauth2/token", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      Authorization: `Basic ${btoa(`${clientId}:${secret}`)}`,
+    },
+    body: "grant_type=client_credentials",
+  });
+
+  if (!tokenRes.ok) {
+    return errorResponse("PayPal auth failed", 502);
+  }
+
+  const { access_token } = await tokenRes.json();
+
+  // Create order
+  const orderRes = await fetch("https://api-m.paypal.com/v2/checkout/orders", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${access_token}`,
+    },
+    body: JSON.stringify({
+      intent: "CAPTURE",
+      purchase_units: [{
+        description,
+        custom_id: `inscription-${inscriptionId}`,
+        amount: {
+          currency_code: "USD",
+          value: amount,
+        },
+      }],
+      application_context: {
+        brand_name: "Cairo en los Andes Festival",
+        return_url: `${origin}/pago-exitoso?provider=paypal&order_id=${inscriptionId}`,
+        cancel_url: `${origin}/inscripcion?payment=cancelled`,
+        user_action: "PAY_NOW",
+      },
+    }),
+  });
+
+  if (!orderRes.ok) {
+    const err = await orderRes.text();
+    console.error("[PayPal] Create order failed:", err);
+    return errorResponse("PayPal order creation failed", 502);
+  }
+
+  const orderData = await orderRes.json();
+  const approvalLink = orderData.links?.find((l: any) => l.rel === "approve");
+
+  return jsonResponse({
+    orderId: orderData.id,
+    approvalUrl: approvalLink?.href || null,
+  });
+}
+
+// ── MercadoPago Create Preference ──
+async function handleMPCreate(req: Request) {
+  if (req.method !== "POST") return errorResponse("Method not allowed", 405);
+
+  const body = await req.json();
+  const { inscriptionId, paquete, email, origin } = body;
+
+  if (!inscriptionId || !paquete || !email || !origin) {
+    return errorResponse("Missing required fields", 400);
+  }
+
+  const mpToken = process.env.MERCADOPAGO_ACCESS_TOKEN;
+  if (!mpToken) {
+    return errorResponse("MercadoPago not configured", 500);
+  }
+
+  // Get exchange rate
+  const usdPrice = PAQUETE_PRICES_USD_NUM[paquete] || 179;
+  let arsAmount: number;
+  let rate: number;
+
+  try {
+    // Try Bluelytics first
+    const rateRes = await fetch("https://api.bluelytics.com.ar/v2/latest", { signal: AbortSignal.timeout(5000) });
+    const rateData = await rateRes.json();
+    rate = rateData.oficial?.value_sell || rateData.oficial?.value_avg || 1400;
+  } catch {
+    try {
+      // Fallback to DolarAPI
+      const rateRes = await fetch("https://dolarapi.com/v1/dolares/oficial", { signal: AbortSignal.timeout(5000) });
+      const rateData = await rateRes.json();
+      rate = rateData.venta || 1400;
+    } catch {
+      rate = 1400; // Last resort fallback
+    }
+  }
+
+  arsAmount = Math.round(usdPrice * rate);
+
+  const title = PAQUETE_LABELS[paquete] || "Cairo en los Andes Festival";
+
+  const prefRes = await fetch("https://api.mercadopago.com/checkout/preferences", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${mpToken}`,
+    },
+    body: JSON.stringify({
+      items: [{
+        title,
+        description: `Inscripci\u00f3n #${inscriptionId} - ${title} (USD ${usdPrice} \u00d7 $${rate})`,
+        quantity: 1,
+        unit_price: arsAmount,
+        currency_id: "ARS",
+      }],
+      payer: { email },
+      back_urls: {
+        success: `${origin}/pago-exitoso?provider=mercadopago`,
+        failure: `${origin}/inscripcion?payment=failed`,
+        pending: `${origin}/pago-exitoso?provider=mercadopago&status=pending`,
+      },
+      auto_return: "approved",
+      external_reference: `inscription-${inscriptionId}`,
+      statement_descriptor: "CAIRO ANDES",
+    }),
+  });
+
+  if (!prefRes.ok) {
+    const err = await prefRes.text();
+    console.error("[MercadoPago] Create preference failed:", err);
+    return errorResponse("MercadoPago preference creation failed", 502);
+  }
+
+  const prefData = await prefRes.json();
+
+  return jsonResponse({
+    preferenceId: prefData.id,
+    initPoint: prefData.init_point,
+  });
 }

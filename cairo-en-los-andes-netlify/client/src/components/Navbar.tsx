@@ -132,14 +132,12 @@ export default function Navbar() {
             </Link>
 
             {/* CTA */}
-            <a
-              href="https://wa.me/5493873267777"
-              target="_blank"
-              rel="noopener noreferrer"
+            <Link
+              href="/inscripcion"
               className="inline-flex items-center px-5 py-1.5 text-xs font-semibold tracking-wider uppercase bg-gradient-to-r from-[#d4a843] to-[#e8842a] text-[#080c1a] rounded hover:shadow-lg hover:shadow-[#d4a843]/20 transition-all duration-300"
             >
               {t(lang, "navCta")}
-            </a>
+            </Link>
           </div>
         </div>
 
@@ -285,15 +283,14 @@ export default function Navbar() {
             {/* Separator before INSCRIBITE */}
             <div className="h-px bg-gradient-to-r from-transparent via-[#d4a843]/15 to-transparent mt-2" />
 
-            {/* INSCRIBITE / SIGN UP button — bilingual, links to WhatsApp */}
-            <a
-              href="https://wa.me/5493873267777"
-              target="_blank"
-              rel="noopener noreferrer"
+            {/* INSCRIBITE / SIGN UP button — bilingual, links to inscription form */}
+            <Link
+              href="/inscripcion"
+              onClick={() => setMobileOpen(false)}
               className="mt-2 inline-flex items-center justify-center w-full px-5 py-4 text-base font-bold tracking-wider uppercase bg-gradient-to-r from-[#d4a843] to-[#e8842a] text-[#080c1a] rounded-xl hover:shadow-lg hover:shadow-[#d4a843]/20 transition-all duration-300"
             >
               {lang === "es" ? "INSCRIBITE" : "SIGN UP"}
-            </a>
+            </Link>
           </div>
         </div>
       )}

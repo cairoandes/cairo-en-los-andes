@@ -49,4 +49,17 @@ export async function initDb(): Promise<void> {
       FOREIGN KEY (participantId) REFERENCES participant_accounts(id)
     )
   `);
+
+  await db.execute(`
+    CREATE TABLE IF NOT EXISTS inscriptions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      email TEXT NOT NULL,
+      nombre TEXT NOT NULL,
+      apellido TEXT NOT NULL,
+      paquete TEXT NOT NULL,
+      participacion TEXT DEFAULT '',
+      form_data TEXT,
+      created_at INTEGER DEFAULT (strftime('%s','now') * 1000)
+    )
+  `);
 }

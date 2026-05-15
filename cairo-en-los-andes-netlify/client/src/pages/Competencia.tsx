@@ -6,6 +6,7 @@ import { useLang } from "@/contexts/LanguageContext";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
+import DualCTA from "@/components/DualCTA";
 import { ArrowLeft, Trophy, Users, User, UsersRound, Sparkles, Calendar, Info, CheckCircle, MessageCircle } from "lucide-react";
 import { Link } from "wouter";
 
@@ -391,15 +392,7 @@ export default function Competencia() {
               <p className="text-[#faf5eb]/60 mb-8">
                 {info.ctaDesc}
               </p>
-              <a
-                href="https://wa.me/5493873267777?text=Hola!%20Quiero%20inscribirme%20en%20la%20competencia%20de%20Cairo%20en%20los%20Andes%202026"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-[#d4a843] via-[#e8c35a] to-[#e8842a] text-[#080c1a] rounded-xl font-heading font-bold text-lg hover:shadow-[0_0_30px_rgba(212,168,67,0.3)] hover:scale-105 transition-all duration-300"
-              >
-                <MessageCircle size={22} />
-                {info.ctaButton}
-              </a>
+              <DualCTA size="lg" />
             </div>
           </AnimateOnScroll>
         </div>

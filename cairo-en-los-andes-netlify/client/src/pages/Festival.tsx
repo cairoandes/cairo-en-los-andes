@@ -8,6 +8,7 @@ import { t, featureLabels } from "@/lib/translations";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
+import DualCTA from "@/components/DualCTA";
 import { Link } from "wouter";
 import {
   ArrowLeft,
@@ -217,22 +218,7 @@ export default function Festival() {
             <h2 className="font-heading text-2xl md:text-3xl font-bold gold-text mb-6">
               {lang === "es" ? "¿Listo para vivir Cairo Andes?" : "Ready to experience Cairo Andes?"}
             </h2>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a
-                href="https://wa.me/5493873267777"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-[#d4a843] to-[#e8842a] text-[#080c1a] font-bold uppercase tracking-wider rounded-lg hover:shadow-lg hover:shadow-[#d4a843]/20 transition-all duration-300"
-              >
-                {lang === "es" ? "Inscribite ahora" : "Sign up now"}
-              </a>
-              <Link
-                href="/paquetes"
-                className="inline-flex items-center justify-center px-8 py-4 border border-[#d4a843]/40 text-[#d4a843] font-bold uppercase tracking-wider rounded-lg hover:bg-[#d4a843]/10 transition-all duration-300"
-              >
-                {lang === "es" ? "Ver paquetes" : "View packages"}
-              </Link>
-            </div>
+            <DualCTA size="md" />
           </AnimateOnScroll>
         </div>
       </section>

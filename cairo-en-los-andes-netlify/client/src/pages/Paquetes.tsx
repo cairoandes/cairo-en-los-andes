@@ -8,6 +8,7 @@ import { t, paquetesData } from "@/lib/translations";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
+import DualCTA from "@/components/DualCTA";
 import { Link } from "wouter";
 import {
   ArrowLeft,
@@ -260,17 +261,10 @@ export default function Paquetes() {
             </h2>
             <p className="text-[#faf5eb]/60 mb-8 max-w-lg mx-auto">
               {lang === "es"
-                ? "Contactanos por WhatsApp para inscribirte y elegir tu paquete ideal."
-                : "Contact us via WhatsApp to register and choose your ideal package."}
+                ? "Inscribite online o contactanos por WhatsApp para elegir tu paquete ideal."
+                : "Register online or contact us via WhatsApp to choose your ideal package."}
             </p>
-            <a
-              href="https://wa.me/5493873267777"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center px-10 py-4 bg-gradient-to-r from-[#d4a843] to-[#e8842a] text-[#080c1a] font-bold uppercase tracking-wider rounded-lg hover:shadow-lg hover:shadow-[#d4a843]/20 transition-all duration-300 hover:scale-105"
-            >
-              {lang === "es" ? "Inscribite por WhatsApp" : "Sign up via WhatsApp"}
-            </a>
+            <DualCTA size="lg" />
           </AnimateOnScroll>
         </div>
       </section>

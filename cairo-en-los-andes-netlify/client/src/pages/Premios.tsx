@@ -6,6 +6,7 @@ import { useLang } from "@/contexts/LanguageContext";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
+import DualCTA from "@/components/DualCTA";
 import { ArrowLeft, Crown, Award, Medal, Star, Trophy, Sparkles, Plane } from "lucide-react";
 import { Link } from "wouter";
 
@@ -380,15 +381,7 @@ export default function Premios() {
                   ? "Inscribite en la competencia oficial de Cairo en los Andes 2026 y ganá premios increíbles."
                   : "Register for the official Cairo in the Andes 2026 competition and win amazing prizes."}
               </p>
-              <a
-                href="https://wa.me/5493872617777?text=Hola%2C%20quiero%20inscribirme%20en%20la%20competencia%20Cairo%20Andes%202026"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-[#d4a843] to-[#b8922e] text-[#080c1a] font-bold rounded-lg hover:shadow-[0_0_30px_rgba(212,168,67,0.3)] transition-all duration-300 text-lg"
-              >
-                <Trophy size={20} />
-                {lang === "es" ? "Inscribite ahora" : "Register now"}
-              </a>
+              <DualCTA size="lg" />
             </div>
           </AnimateOnScroll>
         </div>

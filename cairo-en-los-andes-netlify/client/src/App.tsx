@@ -22,6 +22,8 @@ import Paquetes from "./pages/Paquetes";
 import Contacto from "./pages/Contacto";
 import ResetPassword from "./pages/ResetPassword";
 import OrganizerPortal from "./pages/OrganizerPortal";
+import Inscripcion from "./pages/Inscripcion";
+import PagoExitoso from "./pages/PagoExitoso";
 function Router() {
   // make sure to consider if you need authentication for certain routes
   return (
@@ -43,6 +45,8 @@ function Router() {
         <Route path={"/mi-cuenta"} component={MiCuenta} />
         <Route path={"/recuperar-password/:token"} component={ResetPassword} />
         <Route path={"/organizador"} component={OrganizerPortal} />
+        <Route path={"/inscripcion"} component={Inscripcion} />
+        <Route path={"/pago-exitoso"} component={PagoExitoso} />
         <Route path={"/404"} component={NotFound} />
         <Route component={NotFound} />
       </Switch>

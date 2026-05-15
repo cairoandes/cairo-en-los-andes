@@ -6,6 +6,7 @@
  */
 import { Link } from "wouter";
 import Navbar from "@/components/Navbar";
+import DualCTA from "@/components/DualCTA";
 import Footer from "@/components/Footer";
 import Countdown from "@/components/Countdown";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
@@ -578,7 +579,7 @@ export default function Home() {
                       {t(lang, "paquetesFinancing")} {p.financing}
                     </p>
                     <a
-                      href="https://wa.me/5493872617777"
+                      href="https://wa.me/5493873267777"
                       target="_blank"
                       rel="noopener noreferrer"
                       className={`w-full text-center py-3 rounded text-sm font-bold uppercase tracking-wider transition-all duration-300 ${
@@ -701,7 +702,7 @@ export default function Home() {
           <div className="max-w-3xl mx-auto grid sm:grid-cols-3 gap-6">
             <AnimateOnScroll direction="up" delay={0}>
               <a
-                href="https://wa.me/5493872617777"
+                href="https://wa.me/5493873267777"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex flex-col items-center text-center p-8 bg-[#0d1230]/60 rounded-lg gold-border hover:gold-glow transition-all duration-300 group"
@@ -714,7 +715,7 @@ export default function Home() {
                   WhatsApp
                 </h3>
                 <p className="text-sm text-[#faf5eb]/60">
-                  +54 9 387 261 7777
+                  +54 9 3873 26-7777
                 </p>
               </a>
             </AnimateOnScroll>
@@ -761,14 +762,7 @@ export default function Home() {
           {/* CTA final */}
           <AnimateOnScroll direction="fade" delay={300}>
             <div className="text-center mt-16">
-              <a
-                href="https://wa.me/5493872617777"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center px-10 py-4 text-base font-bold tracking-wider uppercase bg-gradient-to-r from-[#d4a843] to-[#e8842a] text-[#080c1a] rounded-sm hover:shadow-xl hover:shadow-[#d4a843]/25 transition-all duration-300 hover:scale-105"
-              >
-                {t(lang, "contactoCta")}
-              </a>
+              <DualCTA size="lg" />
             </div>
           </AnimateOnScroll>
         </div>
