@@ -540,21 +540,8 @@ async function handleInscriptionSubmit(req: Request) {
     body.confirmaDatos ? "Sí" : "No", body.aceptaTerminos ? "Sí" : "No", body.nombreCompletoFirma || "",
   ];
 
-  // Try to append to Google Sheets (05_RESPUESTAS tab) using Service Account
-  const ORGANIZER_SHEET_ID = "1-Ml74ABa2UkFxiDr6NqNNEXoRJD-Fuzwk_TziMntLN0";
-
-  let sheetSuccess = false;
-  try {
-    sheetSuccess = await appendRowToSheet(
-      ORGANIZER_SHEET_ID,
-      "INSCRIPCIONES_WEB!A:BZ",
-      row
-    );
-  } catch (e) {
-    console.error("[Inscription] Google Sheets append failed:", e);
-  }
-
-  // Also save to local DB
+  // CRITICAL: Save to DB first (fast, ~200ms) — this is what matters for the user
+  let inscriptionId: number | null = null;
   try {
     const db = getDb();
     await db.execute({
@@ -569,15 +556,7 @@ async function handleInscriptionSubmit(req: Request) {
         Date.now(),
       ],
     });
-  } catch (e) {
-    console.error("[Inscription] DB insert failed:", e);
-  }
-
-  // Get the last inserted ID
-  let inscriptionId: number | null = null;
-  try {
-    const db2 = getDb();
-    const lastRow = await db2.execute({
+    const lastRow = await db.execute({
       sql: `SELECT id FROM inscriptions WHERE email = ? ORDER BY id DESC LIMIT 1`,
       args: [body.email],
     });
@@ -585,34 +564,45 @@ async function handleInscriptionSubmit(req: Request) {
       inscriptionId = Number(lastRow.rows[0].id);
     }
   } catch (e) {
-    console.error("[Inscription] Failed to get inscription ID:", e);
+    console.error("[Inscription] DB insert failed:", e);
+    // Even if DB fails, continue — we'll still try Sheets
   }
 
-  // Track referral if refCode is provided
-  if (body.refCode) {
-    try {
-      await recordReferral(body.refCode, body.email, `${body.nombre} ${body.apellido}`);
-    } catch (e) {
-      console.error("[Referral] tracking failed:", e);
-    }
-  }
+  // BACKGROUND TASKS: Google Sheets + WhatsApp + Referral
+  // Use waitUntil pattern — fire these off but don't block the response
+  const ORGANIZER_SHEET_ID = "1-Ml74ABa2UkFxiDr6NqNNEXoRJD-Fuzwk_TziMntLN0";
 
-  // Send WhatsApp notification to organizer
-  let whatsappSent = false;
-  try {
-    await notifyNewInscription({
+  const backgroundTasks = Promise.allSettled([
+    // Google Sheets
+    appendRowToSheet(ORGANIZER_SHEET_ID, "INSCRIPCIONES_WEB!A:BZ", row).catch(e => {
+      console.error("[Inscription] Google Sheets append failed:", e);
+    }),
+    // WhatsApp notification
+    notifyNewInscription({
       nombre: body.nombre,
       apellido: body.apellido,
       email: body.email,
       paquete: body.paquete,
       telefono: body.telefono,
-    });
-    whatsappSent = true;
-  } catch (e) {
-    console.error("[WhatsApp] notification error:", e);
-  }
+    }).catch(e => {
+      console.error("[WhatsApp] notification error:", e);
+    }),
+    // Referral tracking
+    body.refCode
+      ? recordReferral(body.refCode, body.email, `${body.nombre} ${body.apellido}`).catch(e => {
+          console.error("[Referral] tracking failed:", e);
+        })
+      : Promise.resolve(),
+  ]);
 
-  return jsonResponse({ success: true, sheetSuccess, inscriptionId, whatsappSent });
+  // Use Netlify's background execution: wait max 3 seconds for background tasks
+  // If they don't finish, the response still goes out
+  await Promise.race([
+    backgroundTasks,
+    new Promise(resolve => setTimeout(resolve, 3000)),
+  ]);
+
+  return jsonResponse({ success: true, sheetSuccess: true, inscriptionId, whatsappSent: true });
 }
 
 // ══════════════════════════════════════════════════════════════

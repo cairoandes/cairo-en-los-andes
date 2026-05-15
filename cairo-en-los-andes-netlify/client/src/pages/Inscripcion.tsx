@@ -208,13 +208,34 @@ export default function Inscripcion() {
     setError("");
     setSubmitting(true);
 
+    const payload = { ...form, refCode };
+
+    // Helper: attempt fetch with timeout
+    const attemptSubmit = async (timeoutMs: number): Promise<Response> => {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), timeoutMs);
+      try {
+        const res = await fetch("/api/inscription-submit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+          signal: controller.signal,
+        });
+        return res;
+      } finally {
+        clearTimeout(timer);
+      }
+    };
+
     try {
-      const payload = { ...form, refCode };
-      const res = await fetch("/api/inscription-submit", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      // Try with 15s timeout, retry once with 20s if it fails
+      let res: Response;
+      try {
+        res = await attemptSubmit(15000);
+      } catch (firstErr: any) {
+        console.warn("[Inscription] First attempt failed, retrying...", firstErr.name);
+        res = await attemptSubmit(20000);
+      }
 
       if (!res.ok) {
         const errText = await res.text().catch(() => "");
@@ -228,7 +249,11 @@ export default function Inscripcion() {
       setSubmitted(true);
     } catch (err: any) {
       console.error("[Inscription] Submit error:", err);
-      setError(lang === "es" ? "Error al enviar. Intentá de nuevo." : "Submission error. Please try again.");
+      if (err.name === "AbortError") {
+        setError(lang === "es" ? "La conexi\u00f3n tard\u00f3 demasiado. Verific\u00e1 tu internet e intent\u00e1 de nuevo." : "Connection timed out. Check your internet and try again.");
+      } else {
+        setError(lang === "es" ? "Error al enviar. Intent\u00e1 de nuevo." : "Submission error. Please try again.");
+      }
     } finally {
       setSubmitting(false);
     }
