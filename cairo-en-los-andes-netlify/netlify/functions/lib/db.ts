@@ -80,4 +80,29 @@ export async function initDb(): Promise<void> {
       created_at INTEGER DEFAULT (strftime('%s','now') * 1000)
     )
   `);
+
+  // Profile & Referral tables
+  await db.execute(`
+    CREATE TABLE IF NOT EXISTS participant_profiles (
+      participantId INTEGER PRIMARY KEY,
+      city TEXT,
+      photoUrl TEXT,
+      danceStyles TEXT DEFAULT '[]',
+      referralCode TEXT NOT NULL UNIQUE,
+      createdAt TEXT DEFAULT (datetime('now')),
+      updatedAt TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (participantId) REFERENCES participant_accounts(id)
+    )
+  `);
+
+  await db.execute(`
+    CREATE TABLE IF NOT EXISTS referrals (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      referrerParticipantId INTEGER NOT NULL,
+      referredEmail TEXT NOT NULL,
+      referredName TEXT,
+      createdAt TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (referrerParticipantId) REFERENCES participant_accounts(id)
+    )
+  `);
 }

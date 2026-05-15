@@ -43,6 +43,13 @@ import {
   Star,
   GraduationCap,
   ArrowRight,
+  Gift,
+  Copy,
+  Check,
+  Edit3,
+  X,
+  Share2,
+  Users,
 } from "lucide-react";
 import { Link } from "wouter";
 
@@ -726,80 +733,11 @@ function DashboardData({
   return (
     <div className="space-y-5">
 
-      {/* ═══ CARD 1: MY PROFILE ═══ */}
-      <div className="relative rounded-2xl overflow-hidden border border-purple-500/30 group hover:border-purple-400/50 transition-all duration-500">
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/40 via-[#0d1230]/80 to-fuchsia-900/30" />
-        <div className="absolute top-0 right-0 w-40 h-40 bg-purple-500/10 rounded-full blur-3xl" />
-        <div className="relative p-6 md:p-8">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-400/30 to-fuchsia-500/20 border border-purple-400/40 flex items-center justify-center">
-              <User size={24} className="text-purple-300" />
-            </div>
-            <div>
-              <h3 className="font-heading text-xl font-bold text-[#faf5eb]">
-                {lang === "es" ? "Mi Perfil" : "My Profile"}
-              </h3>
-              <p className="text-sm text-purple-300/70">
-                {data.nombre || "—"}
-              </p>
-            </div>
-          </div>
-          <p className="text-sm text-[#faf5eb]/60 mb-4">
-            {lang === "es"
-              ? "Tu información personal y datos del festival."
-              : "Your personal information and festival data."}
-          </p>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="bg-[#080c1a]/50 rounded-lg p-3 border border-purple-500/10">
-              <span className="text-[10px] uppercase tracking-wider text-purple-300/60 block mb-1">{t.dashPackage}</span>
-              <span className="text-sm font-semibold text-[#faf5eb]">{data.paquete || "—"}</span>
-            </div>
-            <div className="bg-[#080c1a]/50 rounded-lg p-3 border border-purple-500/10">
-              <span className="text-[10px] uppercase tracking-wider text-purple-300/60 block mb-1">{t.dashCompetition}</span>
-              <span className="text-sm font-semibold text-[#faf5eb]">{data.competencia || "—"}</span>
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* ═══ CARD 1: MY PROFILE (Editable) ═══ */}
+      <ProfileCard lang={lang} nombre={data.nombre} />
 
-      {/* ═══ CARD 2: FESTIVAL HUB ═══ */}
-      <div className="relative rounded-2xl overflow-hidden border border-orange-500/30 group hover:border-orange-400/50 transition-all duration-500">
-        <div className="absolute inset-0 bg-gradient-to-br from-orange-900/30 via-[#0d1230]/80 to-red-900/20" />
-        <div className="absolute bottom-0 left-0 w-48 h-48 bg-orange-500/10 rounded-full blur-3xl" />
-        <div className="relative p-6 md:p-8">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/15 border border-orange-400/30 mb-4">
-            <Calendar size={12} className="text-orange-400" />
-            <span className="text-[10px] uppercase tracking-wider text-orange-300 font-semibold">
-              16, 17 & 18 {lang === "es" ? "Octubre" : "October"} 2026
-            </span>
-          </div>
-          <h3 className="font-heading text-xl font-bold text-[#faf5eb] mb-2">
-            Festival Hub
-          </h3>
-          <p className="text-sm text-[#faf5eb]/60 mb-5">
-            {lang === "es"
-              ? "Workshops, galas, horarios, hotel y todo lo que necesitás para el festival."
-              : "Workshops, galas, schedules, hotel info, and everything you need for the festival."}
-          </p>
-          <div className="grid grid-cols-3 gap-2 mb-5">
-            {[
-              { icon: GraduationCap, label: "Workshops" },
-              { icon: Theater, label: "Galas" },
-              { icon: Trophy, label: lang === "es" ? "Competencia" : "Competition" },
-            ].map((item) => (
-              <div key={item.label} className="flex flex-col items-center gap-1 p-3 rounded-lg bg-[#080c1a]/50 border border-orange-500/10">
-                <item.icon size={18} className="text-orange-400/80" />
-                <span className="text-[10px] text-[#faf5eb]/60 text-center">{item.label}</span>
-              </div>
-            ))}
-          </div>
-          <Link href="/festival" className="inline-flex items-center gap-2 text-orange-400 text-sm font-medium hover:text-orange-300 transition-colors">
-            <MapPin size={14} />
-            {lang === "es" ? "Explorar Festival" : "Explore Festival"}
-            <ArrowRight size={14} />
-          </Link>
-        </div>
-      </div>
+      {/* ═══ CARD 2: INVITÁ & GANÁ (Referral) ═══ */}
+      <ReferralCard lang={lang} />
 
       {/* ═══ CARD 3: MI PAQUETE & PAGOS ═══ */}
       <div className="relative rounded-2xl overflow-hidden border border-emerald-500/30 group hover:border-emerald-400/50 transition-all duration-500">
@@ -838,6 +776,42 @@ function DashboardData({
               <span className="text-lg font-bold text-amber-400">{data.saldo || "$0"}</span>
             </div>
           </div>
+
+          {/* Participaciones & Competencia */}
+          {(data.participaciones || data.competencia) && (
+            <div className="border-t border-emerald-500/15 pt-4 mb-4">
+              <div className="flex items-center gap-2 mb-3">
+                <Star size={14} className="text-[#d4a843]/70" />
+                <span className="text-xs font-medium text-[#faf5eb]/60 uppercase tracking-wider">
+                  {lang === "es" ? "Participaciones & Competencia" : "Performances & Competition"}
+                </span>
+              </div>
+              <div className="grid grid-cols-1 gap-2">
+                {data.participaciones && data.participaciones !== "—" && data.participaciones !== "" && (
+                  <div className="flex items-center gap-3 px-3 py-3 rounded-lg bg-[#d4a843]/5 border border-[#d4a843]/15">
+                    <div className="w-8 h-8 rounded-full bg-[#d4a843]/15 flex items-center justify-center shrink-0">
+                      <Hash size={14} className="text-[#d4a843]" />
+                    </div>
+                    <div>
+                      <span className="text-[10px] uppercase tracking-wider text-[#d4a843]/60 block">{t.dashParticipations}</span>
+                      <span className="text-sm font-semibold text-[#faf5eb]">{data.participaciones}</span>
+                    </div>
+                  </div>
+                )}
+                {data.competencia && data.competencia !== "—" && data.competencia !== "" && (
+                  <div className="flex items-center gap-3 px-3 py-3 rounded-lg bg-[#d4a843]/5 border border-[#d4a843]/15">
+                    <div className="w-8 h-8 rounded-full bg-[#d4a843]/15 flex items-center justify-center shrink-0">
+                      <Trophy size={14} className="text-[#d4a843]" />
+                    </div>
+                    <div>
+                      <span className="text-[10px] uppercase tracking-wider text-[#d4a843]/60 block">{t.dashCompetition}</span>
+                      <span className="text-sm font-semibold text-[#faf5eb]">{data.competencia}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Payment History */}
           <div className="border-t border-emerald-500/15 pt-4">
@@ -880,44 +854,42 @@ function DashboardData({
         </div>
       </div>
 
-      {/* ═══ CARD 4: MIS PARTICIPACIONES ═══ */}
-      <div className="relative rounded-2xl overflow-hidden border border-[#d4a843]/30 group hover:border-[#d4a843]/50 transition-all duration-500">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#d4a843]/10 via-[#0d1230]/80 to-amber-900/20" />
-        <div className="absolute top-0 right-0 w-36 h-36 bg-[#d4a843]/10 rounded-full blur-3xl" />
+      {/* ═══ CARD 4: FESTIVAL HUB ═══ */}
+      <div className="relative rounded-2xl overflow-hidden border border-orange-500/30 group hover:border-orange-400/50 transition-all duration-500">
+        <div className="absolute inset-0 bg-gradient-to-br from-orange-900/30 via-[#0d1230]/80 to-red-900/20" />
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-orange-500/10 rounded-full blur-3xl" />
         <div className="relative p-6 md:p-8">
-          <h3 className="font-heading text-xl font-bold text-[#faf5eb] flex items-center gap-3 mb-3">
-            <Star size={22} className="text-[#d4a843]" />
-            {lang === "es" ? "Mis Participaciones" : "My Performances"}
-          </h3>
-          <p className="text-sm text-[#faf5eb]/60 mb-4">
-            {lang === "es"
-              ? "Tus números inscriptos para galas y competencia."
-              : "Your registered numbers for galas and competition."}
-          </p>
-          <div className="bg-[#080c1a]/50 rounded-lg p-4 border border-[#d4a843]/15">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-[#d4a843]/15 flex items-center justify-center">
-                <Hash size={18} className="text-[#d4a843]" />
-              </div>
-              <div>
-                <span className="text-[10px] uppercase tracking-wider text-[#d4a843]/60 block">{t.dashParticipations}</span>
-                <span className="text-base font-bold text-[#faf5eb]">{data.participaciones || "—"}</span>
-              </div>
-            </div>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/15 border border-orange-400/30 mb-4">
+            <Calendar size={12} className="text-orange-400" />
+            <span className="text-[10px] uppercase tracking-wider text-orange-300 font-semibold">
+              16, 17 & 18 {lang === "es" ? "Octubre" : "October"} 2026
+            </span>
           </div>
-          {data.competencia && data.competencia !== "—" && data.competencia !== "" && (
-            <div className="mt-3 bg-[#080c1a]/50 rounded-lg p-4 border border-[#d4a843]/15">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-[#d4a843]/15 flex items-center justify-center">
-                  <Trophy size={18} className="text-[#d4a843]" />
-                </div>
-                <div>
-                  <span className="text-[10px] uppercase tracking-wider text-[#d4a843]/60 block">{t.dashCompetition}</span>
-                  <span className="text-base font-bold text-[#faf5eb]">{data.competencia}</span>
-                </div>
+          <h3 className="font-heading text-xl font-bold text-[#faf5eb] mb-2">
+            Festival Hub
+          </h3>
+          <p className="text-sm text-[#faf5eb]/60 mb-5">
+            {lang === "es"
+              ? "Workshops, galas, horarios, hotel y todo lo que necesitás para el festival."
+              : "Workshops, galas, schedules, hotel info, and everything you need for the festival."}
+          </p>
+          <div className="grid grid-cols-3 gap-2 mb-5">
+            {[
+              { icon: GraduationCap, label: "Workshops" },
+              { icon: Theater, label: "Galas" },
+              { icon: Trophy, label: lang === "es" ? "Competencia" : "Competition" },
+            ].map((item) => (
+              <div key={item.label} className="flex flex-col items-center gap-1 p-3 rounded-lg bg-[#080c1a]/50 border border-orange-500/10">
+                <item.icon size={18} className="text-orange-400/80" />
+                <span className="text-[10px] text-[#faf5eb]/60 text-center">{item.label}</span>
               </div>
-            </div>
-          )}
+            ))}
+          </div>
+          <Link href="/festival" className="inline-flex items-center gap-2 text-orange-400 text-sm font-medium hover:text-orange-300 transition-colors">
+            <MapPin size={14} />
+            {lang === "es" ? "Explorar Festival" : "Explore Festival"}
+            <ArrowRight size={14} />
+          </Link>
         </div>
       </div>
 
@@ -1025,6 +997,391 @@ function SheetsErrorCard({ t }: { t: (typeof txt)["es"] }) {
         <MessageCircle size={18} />
         {t.dashWhatsApp}
       </a>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════ */
+/* PROFILE CARD — Editable with photo, city, dance styles */
+/* ══════════════════════════════════════════════════════════════ */
+
+const DANCE_STYLES = [
+  "Belly Dance", "Tribal Fusion", "ATS", "Folklore Árabe", "Dabke",
+  "Bollywood", "Flamenco Fusión", "Contemporary Fusion", "Drum Solo",
+  "Baladi", "Saidi", "Khaleeji", "Shaabi", "Pop Oriental",
+];
+
+function ProfileCard({ lang, nombre }: { lang: "es" | "en"; nombre: string }) {
+  const [profile, setProfile] = useState<{
+    city: string | null;
+    photoUrl: string | null;
+    danceStyles: string[];
+    referralCode: string;
+    name: string | null;
+    email: string;
+  } | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editCity, setEditCity] = useState("");
+  const [editStyles, setEditStyles] = useState<string[]>([]);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    api.getMyProfile().then((res) => {
+      setProfile(res.profile);
+      setEditCity(res.profile.city || "");
+      setEditStyles(res.profile.danceStyles || []);
+      setIsLoading(false);
+    }).catch(() => setIsLoading(false));
+  }, []);
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      const res = await api.updateProfile({
+        city: editCity,
+        danceStyles: editStyles,
+      });
+      setProfile((prev) => prev ? { ...prev, city: res.profile.city, danceStyles: res.profile.danceStyles } : prev);
+      setIsEditing(false);
+    } catch (e) {
+      console.error("Failed to save profile:", e);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const toggleStyle = (style: string) => {
+    setEditStyles((prev) =>
+      prev.includes(style)
+        ? prev.filter((s) => s !== style)
+        : [...prev, style]
+    );
+  };
+
+  return (
+    <div className="relative rounded-2xl overflow-hidden border border-purple-500/30 group hover:border-purple-400/50 transition-all duration-500">
+      <div className="absolute inset-0 bg-gradient-to-br from-purple-900/40 via-[#0d1230]/80 to-fuchsia-900/30" />
+      <div className="absolute top-0 right-0 w-40 h-40 bg-purple-500/10 rounded-full blur-3xl" />
+      <div className="relative p-6 md:p-8">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-400/30 to-fuchsia-500/20 border border-purple-400/40 flex items-center justify-center overflow-hidden">
+              {profile?.photoUrl ? (
+                <img src={profile.photoUrl} alt="Profile" className="w-full h-full object-cover" />
+              ) : (
+                <User size={24} className="text-purple-300" />
+              )}
+            </div>
+            <div>
+              <h3 className="font-heading text-xl font-bold text-[#faf5eb]">
+                {lang === "es" ? "Mi Perfil" : "My Profile"}
+              </h3>
+              <p className="text-sm text-purple-300/70">
+                {nombre || profile?.name || "—"}
+              </p>
+            </div>
+          </div>
+          {!isEditing && !isLoading && (
+            <button
+              onClick={() => setIsEditing(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-purple-400/30 text-purple-300 text-xs hover:bg-purple-400/10 transition-all"
+            >
+              <Edit3 size={12} />
+              {lang === "es" ? "Editar" : "Edit"}
+            </button>
+          )}
+        </div>
+
+        {isLoading ? (
+          <div className="flex items-center justify-center py-6">
+            <Loader2 size={20} className="text-purple-300 animate-spin" />
+          </div>
+        ) : isEditing ? (
+          <div className="space-y-4">
+            {/* City */}
+            <div>
+              <label className="text-[10px] uppercase tracking-wider text-purple-300/60 block mb-1.5">
+                {lang === "es" ? "Ciudad" : "City"}
+              </label>
+              <input
+                type="text"
+                value={editCity}
+                onChange={(e) => setEditCity(e.target.value)}
+                placeholder={lang === "es" ? "Ej: Buenos Aires, Argentina" : "E.g.: Buenos Aires, Argentina"}
+                className="w-full bg-[#080c1a]/60 border border-purple-500/20 rounded-lg px-3 py-2.5 text-sm text-[#faf5eb] placeholder:text-[#faf5eb]/30 focus:border-purple-400/50 focus:outline-none transition-colors"
+              />
+            </div>
+
+            {/* Dance Styles */}
+            <div>
+              <label className="text-[10px] uppercase tracking-wider text-purple-300/60 block mb-2">
+                {lang === "es" ? "Estilos de danza favoritos" : "Favorite dance styles"}
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {DANCE_STYLES.map((style) => (
+                  <button
+                    key={style}
+                    onClick={() => toggleStyle(style)}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                      editStyles.includes(style)
+                        ? "bg-purple-500/30 border border-purple-400/50 text-purple-200"
+                        : "bg-[#080c1a]/50 border border-[#faf5eb]/10 text-[#faf5eb]/50 hover:border-purple-400/30 hover:text-purple-300"
+                    }`}
+                  >
+                    {style}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Save / Cancel buttons */}
+            <div className="flex gap-2 pt-2">
+              <button
+                onClick={handleSave}
+                disabled={isSaving}
+                className="flex items-center gap-2 px-4 py-2 bg-purple-500/20 border border-purple-400/40 rounded-lg text-purple-200 text-sm font-medium hover:bg-purple-500/30 transition-all disabled:opacity-50"
+              >
+                {isSaving ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+                {lang === "es" ? "Guardar" : "Save"}
+              </button>
+              <button
+                onClick={() => {
+                  setIsEditing(false);
+                  setEditCity(profile?.city || "");
+                  setEditStyles(profile?.danceStyles || []);
+                }}
+                className="flex items-center gap-2 px-4 py-2 border border-[#faf5eb]/15 rounded-lg text-[#faf5eb]/60 text-sm hover:text-[#faf5eb]/80 transition-all"
+              >
+                <X size={14} />
+                {lang === "es" ? "Cancelar" : "Cancel"}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {/* City display */}
+            <div className="bg-[#080c1a]/50 rounded-lg p-3 border border-purple-500/10">
+              <span className="text-[10px] uppercase tracking-wider text-purple-300/60 block mb-1">
+                {lang === "es" ? "Ciudad" : "City"}
+              </span>
+              <span className="text-sm font-semibold text-[#faf5eb]">
+                {profile?.city || (lang === "es" ? "Sin definir" : "Not set")}
+              </span>
+            </div>
+
+            {/* Dance styles display */}
+            {profile?.danceStyles && profile.danceStyles.length > 0 && (
+              <div className="bg-[#080c1a]/50 rounded-lg p-3 border border-purple-500/10">
+                <span className="text-[10px] uppercase tracking-wider text-purple-300/60 block mb-2">
+                  {lang === "es" ? "Estilos favoritos" : "Favorite styles"}
+                </span>
+                <div className="flex flex-wrap gap-1.5">
+                  {profile.danceStyles.map((style) => (
+                    <span
+                      key={style}
+                      className="px-2.5 py-1 rounded-full text-[10px] font-medium bg-purple-500/20 border border-purple-400/30 text-purple-200"
+                    >
+                      {style}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════ */
+/* REFERRAL CARD — Invite & Earn */
+/* ══════════════════════════════════════════════════════════════ */
+
+function ReferralCard({ lang }: { lang: "es" | "en" }) {
+  const [referralData, setReferralData] = useState<{
+    referralCode: string;
+    referralCount: number;
+    freeParticipations: number;
+    remaining: number;
+    referrals: { id: number; referredEmail: string; referredName: string | null; createdAt: string }[];
+  } | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    api.getMyReferrals().then((res) => {
+      setReferralData(res);
+      setIsLoading(false);
+    }).catch(() => setIsLoading(false));
+  }, []);
+
+  const referralLink = referralData
+    ? `${window.location.origin}/inscripcion?ref=${referralData.referralCode}`
+    : "";
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(referralLink);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleShareWhatsApp = () => {
+    const text = lang === "es"
+      ? `Te invito al Festival Cairo en los Andes 2026 en Salta, Argentina. Inscribite con mi link: ${referralLink}`
+      : `I invite you to Cairo en los Andes Festival 2026 in Salta, Argentina. Register with my link: ${referralLink}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
+  };
+
+  const progress = referralData
+    ? ((referralData.referralCount % 4) / 4) * 100
+    : 0;
+
+  return (
+    <div className="relative rounded-2xl overflow-hidden border border-pink-500/30 group hover:border-pink-400/50 transition-all duration-500">
+      <div className="absolute inset-0 bg-gradient-to-br from-pink-900/30 via-[#0d1230]/80 to-rose-900/20" />
+      <div className="absolute top-0 left-0 w-40 h-40 bg-pink-500/10 rounded-full blur-3xl" />
+      <div className="absolute bottom-0 right-0 w-32 h-32 bg-rose-500/10 rounded-full blur-3xl" />
+      <div className="relative p-6 md:p-8">
+        <div className="flex items-center gap-4 mb-4">
+          <div className="w-14 h-14 rounded-full bg-gradient-to-br from-pink-400/30 to-rose-500/20 border border-pink-400/40 flex items-center justify-center">
+            <Gift size={24} className="text-pink-300" />
+          </div>
+          <div>
+            <h3 className="font-heading text-xl font-bold text-[#faf5eb]">
+              {lang === "es" ? "Invitá & Ganá" : "Invite & Earn"}
+            </h3>
+            <p className="text-sm text-pink-300/70">
+              {lang === "es"
+                ? "Compartí tu link y ganá participaciones gratis"
+                : "Share your link and earn free performances"}
+            </p>
+          </div>
+        </div>
+
+        {isLoading ? (
+          <div className="flex items-center justify-center py-6">
+            <Loader2 size={20} className="text-pink-300 animate-spin" />
+          </div>
+        ) : referralData ? (
+          <div className="space-y-4">
+            {/* How it works */}
+            <div className="bg-[#080c1a]/50 rounded-lg p-4 border border-pink-500/10">
+              <p className="text-xs text-[#faf5eb]/60 leading-relaxed">
+                {lang === "es"
+                  ? "Por cada 4 personas que se inscriban con tu link, ganás una participación gratis en gala o competencia."
+                  : "For every 4 people who register with your link, you earn a free gala or competition performance."}
+              </p>
+            </div>
+
+            {/* Progress */}
+            <div className="bg-[#080c1a]/50 rounded-lg p-4 border border-pink-500/10">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[10px] uppercase tracking-wider text-pink-300/60">
+                  {lang === "es" ? "Progreso" : "Progress"}
+                </span>
+                <span className="text-xs font-bold text-pink-300">
+                  {referralData.referralCount % 4}/4
+                </span>
+              </div>
+              <div className="w-full h-2 bg-[#080c1a] rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-pink-500 to-rose-400 rounded-full transition-all duration-500"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+              <div className="flex items-center justify-between mt-2">
+                <span className="text-[10px] text-[#faf5eb]/40">
+                  {lang === "es"
+                    ? `${referralData.remaining} más para tu próximo premio`
+                    : `${referralData.remaining} more for your next reward`}
+                </span>
+                {referralData.freeParticipations > 0 && (
+                  <span className="text-[10px] font-bold text-emerald-400">
+                    {referralData.freeParticipations} {lang === "es" ? "ganada(s)" : "earned"}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Stats */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-[#080c1a]/50 rounded-lg p-3 border border-pink-500/10 text-center">
+                <span className="text-2xl font-bold text-pink-400">{referralData.referralCount}</span>
+                <span className="text-[10px] uppercase tracking-wider text-pink-300/60 block mt-1">
+                  {lang === "es" ? "Referidos" : "Referrals"}
+                </span>
+              </div>
+              <div className="bg-[#080c1a]/50 rounded-lg p-3 border border-pink-500/10 text-center">
+                <span className="text-2xl font-bold text-emerald-400">{referralData.freeParticipations}</span>
+                <span className="text-[10px] uppercase tracking-wider text-emerald-300/60 block mt-1">
+                  {lang === "es" ? "Premios" : "Rewards"}
+                </span>
+              </div>
+            </div>
+
+            {/* Referral Link */}
+            <div className="bg-[#080c1a]/50 rounded-lg p-3 border border-pink-500/10">
+              <span className="text-[10px] uppercase tracking-wider text-pink-300/60 block mb-2">
+                {lang === "es" ? "Tu link personal" : "Your personal link"}
+              </span>
+              <div className="flex items-center gap-2">
+                <div className="flex-1 bg-[#080c1a] rounded px-3 py-2 text-xs text-[#faf5eb]/70 truncate border border-[#faf5eb]/5">
+                  {referralLink}
+                </div>
+                <button
+                  onClick={handleCopy}
+                  className={`shrink-0 p-2 rounded-lg border transition-all ${
+                    copied
+                      ? "bg-emerald-500/20 border-emerald-400/40 text-emerald-300"
+                      : "bg-pink-500/10 border-pink-400/30 text-pink-300 hover:bg-pink-500/20"
+                  }`}
+                >
+                  {copied ? <Check size={14} /> : <Copy size={14} />}
+                </button>
+              </div>
+            </div>
+
+            {/* Share buttons */}
+            <div className="flex gap-2">
+              <button
+                onClick={handleShareWhatsApp}
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-pink-500/20 to-rose-500/20 border border-pink-400/30 rounded-lg text-pink-200 text-sm font-medium hover:from-pink-500/30 hover:to-rose-500/30 transition-all"
+              >
+                <Share2 size={14} />
+                {lang === "es" ? "Compartir por WhatsApp" : "Share via WhatsApp"}
+              </button>
+            </div>
+
+            {/* Referral list */}
+            {referralData.referrals.length > 0 && (
+              <div className="border-t border-pink-500/15 pt-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <Users size={12} className="text-pink-300/60" />
+                  <span className="text-[10px] uppercase tracking-wider text-[#faf5eb]/50">
+                    {lang === "es" ? "Tus referidos" : "Your referrals"}
+                  </span>
+                </div>
+                <div className="space-y-1.5 max-h-32 overflow-y-auto">
+                  {referralData.referrals.map((ref) => (
+                    <div key={ref.id} className="flex items-center justify-between px-2 py-1.5 rounded bg-[#080c1a]/30">
+                      <span className="text-xs text-[#faf5eb]/60">{ref.referredName || ref.referredEmail}</span>
+                      <span className="text-[10px] text-[#faf5eb]/30">
+                        {new Date(ref.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="text-center py-4 text-[#faf5eb]/30 text-xs">
+            {lang === "es" ? "No se pudo cargar" : "Could not load"}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

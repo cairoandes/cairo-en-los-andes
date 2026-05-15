@@ -48,6 +48,13 @@ import {
 } from "./lib/organizerSheets.js";
 import { appendRowToSheet } from "./lib/sheetsAuth.js";
 import { notifyNewInscription, notifyNewDirectPurchase } from "./lib/whatsappNotify.js";
+import {
+  getOrCreateProfile,
+  updateProfile,
+  getReferralCount,
+  getReferrals,
+  recordReferral,
+} from "./lib/profileDb.js";
 
 // ── Organizer email (only this email can access organizer endpoints) ──
 const ORGANIZER_EMAILS = [
@@ -102,6 +109,15 @@ export default async function handler(req: Request, context: Context) {
       case "direct-purchase-mark-paid":
         return handleDirectPurchaseMarkPaid(req);
       // ── Organizer endpoints ──
+      // ── Profile & Referral endpoints ──
+      case "my-profile":
+        return handleMyProfile(req);
+      case "update-profile":
+        return handleUpdateProfile(req);
+      case "my-referrals":
+        return handleMyReferrals(req);
+      case "record-referral":
+        return handleRecordReferral(req);
       case "organizer-me":
         return handleOrganizerMe(req);
       case "organizer-participants":
@@ -978,3 +994,103 @@ async function handleDirectPurchaseMarkPaid(req: Request) {
   return jsonResponse({ success: true });
 }
 
+
+// ══════════════════════════════════════════════════════════════
+// PROFILE & REFERRAL ENDPOINTS
+// ══════════════════════════════════════════════════════════════
+
+async function handleMyProfile(req: Request) {
+  if (req.method !== "GET") return errorResponse("Method not allowed", 405);
+
+  const participant = await getParticipantFromCookies(
+    req.headers.get("cookie") || ""
+  );
+  if (!participant) return errorResponse("Not authenticated", 401);
+
+  await initDb();
+  const account = await getParticipantById(participant.participantId);
+  if (!account) return errorResponse("Account not found", 404);
+
+  const profile = await getOrCreateProfile(participant.participantId, account.name);
+  const referralCount = await getReferralCount(participant.participantId);
+
+  return jsonResponse({
+    profile: {
+      ...profile,
+      danceStyles: JSON.parse(profile.danceStyles || "[]"),
+      name: account.name,
+      email: account.email,
+    },
+    referralCount,
+    freeParticipations: Math.floor(referralCount / 4),
+  });
+}
+
+async function handleUpdateProfile(req: Request) {
+  if (req.method !== "POST") return errorResponse("Method not allowed", 405);
+
+  const participant = await getParticipantFromCookies(
+    req.headers.get("cookie") || ""
+  );
+  if (!participant) return errorResponse("Not authenticated", 401);
+
+  await initDb();
+  const body = await req.json();
+  const { city, photoUrl, danceStyles } = body;
+
+  const updated = await updateProfile(participant.participantId, {
+    city: city !== undefined ? city : undefined,
+    photoUrl: photoUrl !== undefined ? photoUrl : undefined,
+    danceStyles: danceStyles !== undefined ? danceStyles : undefined,
+  });
+
+  return jsonResponse({
+    success: true,
+    profile: {
+      ...updated,
+      danceStyles: JSON.parse(updated.danceStyles || "[]"),
+    },
+  });
+}
+
+async function handleMyReferrals(req: Request) {
+  if (req.method !== "GET") return errorResponse("Method not allowed", 405);
+
+  const participant = await getParticipantFromCookies(
+    req.headers.get("cookie") || ""
+  );
+  if (!participant) return errorResponse("Not authenticated", 401);
+
+  await initDb();
+  const account = await getParticipantById(participant.participantId);
+  if (!account) return errorResponse("Account not found", 404);
+
+  const profile = await getOrCreateProfile(participant.participantId, account.name);
+  const referrals = await getReferrals(participant.participantId);
+  const referralCount = referrals.length;
+
+  return jsonResponse({
+    referralCode: profile.referralCode,
+    referrals,
+    referralCount,
+    freeParticipations: Math.floor(referralCount / 4),
+    nextRewardAt: (Math.floor(referralCount / 4) + 1) * 4,
+    remaining: ((Math.floor(referralCount / 4) + 1) * 4) - referralCount,
+  });
+}
+
+async function handleRecordReferral(req: Request) {
+  if (req.method !== "POST") return errorResponse("Method not allowed", 405);
+
+  await initDb();
+  const body = await req.json();
+  const { referralCode, email, name } = body;
+
+  if (!referralCode || !email) {
+    return errorResponse("Missing referralCode or email", 400);
+  }
+
+  const success = await recordReferral(referralCode, email, name);
+
+  return jsonResponse({ success });
+}

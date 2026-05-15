@@ -100,6 +100,45 @@ export const api = {
       { method: "POST", body: JSON.stringify({ token, newPassword }) }
     ),
 
+  // ── Profile & Referral endpoints ──
+
+  getMyProfile: () =>
+    request<{
+      profile: {
+        participantId: number;
+        city: string | null;
+        photoUrl: string | null;
+        danceStyles: string[];
+        referralCode: string;
+        name: string | null;
+        email: string;
+      };
+      referralCount: number;
+      freeParticipations: number;
+    }>("my-profile"),
+
+  updateProfile: (data: { city?: string; photoUrl?: string; danceStyles?: string[] }) =>
+    request<{
+      success: boolean;
+      profile: {
+        participantId: number;
+        city: string | null;
+        photoUrl: string | null;
+        danceStyles: string[];
+        referralCode: string;
+      };
+    }>("update-profile", { method: "POST", body: JSON.stringify(data) }),
+
+  getMyReferrals: () =>
+    request<{
+      referralCode: string;
+      referrals: { id: number; referredEmail: string; referredName: string | null; createdAt: string }[];
+      referralCount: number;
+      freeParticipations: number;
+      nextRewardAt: number;
+      remaining: number;
+    }>("my-referrals"),
+
   // ── Organizer endpoints ──
 
   organizerMe: () =>
