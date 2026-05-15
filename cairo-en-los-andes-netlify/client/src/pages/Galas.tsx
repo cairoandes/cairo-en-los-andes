@@ -206,10 +206,11 @@ export default function GalasPage() {
                         <div className="grid sm:grid-cols-2 gap-4 mb-6">
                           {gala.highlights.map((h, j) => {
                             const HIcon = h.icon;
+                            const isHighlighted = i === 0 && j === 0;
                             return (
-                              <div key={j} className="flex items-center gap-3 p-3 bg-[#faf5eb]/5 rounded-lg">
-                                <HIcon size={18} style={{ color: gala.color }} className="shrink-0" />
-                                <span className="text-sm text-[#faf5eb]/80">{h.text}</span>
+                              <div key={j} className={`flex items-center gap-3 p-3 rounded-lg ${isHighlighted ? 'bg-gradient-to-r from-[#d4a843]/20 to-[#e8842a]/10 border border-[#d4a843]/40' : 'bg-[#faf5eb]/5'}`}>
+                                <HIcon size={18} className={`shrink-0 ${isHighlighted ? 'text-[#d4a843]' : ''}`} style={isHighlighted ? undefined : { color: gala.color }} />
+                                <span className={`text-sm ${isHighlighted ? 'text-[#d4a843] font-semibold' : 'text-[#faf5eb]/80'}`}>{h.text}</span>
                               </div>
                             );
                           })}
