@@ -23,8 +23,9 @@ export async function notifyOrganizer(message: string): Promise<boolean> {
     });
 
     if (res.ok) {
-      console.log("[WhatsApp] Notification sent successfully");
-      return true;
+      const body = await res.text();
+      console.log("[WhatsApp] Notification response:", body);
+      return body.includes("queued");
     } else {
       const errText = await res.text();
       console.error("[WhatsApp] Notification failed:", res.status, errText);
@@ -47,21 +48,21 @@ export async function notifyNewInscription(data: {
   telefono?: string;
 }): Promise<void> {
   const paqueteLabels: Record<string, string> = {
-    paquete1: "Paquete 1 – Sin hotel ($179)",
-    paquete2: "Paquete 2 – Hotel Boutique ($240)",
-    paquete3: "Paquete 3 – Sheraton ($680)",
+    paquete1: "Paquete 1 - Sin hotel ($179)",
+    paquete2: "Paquete 2 - Hotel Boutique ($240)",
+    paquete3: "Paquete 3 - Sheraton ($680)",
   };
 
   const paqueteLabel = paqueteLabels[data.paquete] || data.paquete;
 
-  const message = `🎉 *NUEVA INSCRIPCIÓN*
-
-👤 *${data.nombre} ${data.apellido}*
-📧 ${data.email}
-📱 ${data.telefono || "No proporcionado"}
-📦 ${paqueteLabel}
-
-🔗 Ver en Google Sheets`;
+  const message = [
+    "*NUEVA INSCRIPCION*",
+    "",
+    `Nombre: ${data.nombre} ${data.apellido}`,
+    `Email: ${data.email}`,
+    `Tel: ${data.telefono || "No proporcionado"}`,
+    `Paquete: ${paqueteLabel}`,
+  ].join("\n");
 
   await notifyOrganizer(message);
 }
@@ -85,16 +86,16 @@ export async function notifyNewDirectPurchase(data: {
 
   const provider = providerLabels[data.paymentProvider] || data.paymentProvider;
 
-  const message = `🛒 *NUEVA COMPRA DIRECTA*
-
-👤 *${data.nombre}*
-📧 ${data.email}
-📱 ${data.telefono}
-🎫 ${data.productoLabel}
-💰 USD $${data.montoUSD}
-💳 ${provider}
-
-🔗 Ver en Google Sheets`;
+  const message = [
+    "*NUEVA COMPRA DIRECTA*",
+    "",
+    `Nombre: ${data.nombre}`,
+    `Email: ${data.email}`,
+    `Tel: ${data.telefono}`,
+    `Producto: ${data.productoLabel}`,
+    `Monto: USD $${data.montoUSD}`,
+    `Metodo: ${provider}`,
+  ].join("\n");
 
   await notifyOrganizer(message);
 }
