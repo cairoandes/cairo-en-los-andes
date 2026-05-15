@@ -519,7 +519,7 @@ async function handleInscriptionSubmit(req: Request) {
   try {
     sheetSuccess = await appendRowToSheet(
       ORGANIZER_SHEET_ID,
-      "05_RESPUESTAS!A:BZ",
+      "INSCRIPCIONES_WEB!A:BZ",
       row
     );
   } catch (e) {
@@ -803,7 +803,7 @@ async function handleDirectPurchase(req: Request) {
     const row = [timestamp, nombre.trim(), email.trim().toLowerCase(), telefono.trim(), producto, productoLabel, `$${montoUSD}`, "PENDIENTE", paymentProvider];
     const synced = await appendRowToSheet(
       sheetId,
-      "06_COMPRAS_DIRECTAS!A:I",
+      "COMPRAS_DIRECTAS_WEB!A:I",
       row
     );
     if (synced) {
