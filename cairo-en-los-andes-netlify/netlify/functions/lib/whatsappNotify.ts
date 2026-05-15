@@ -12,28 +12,30 @@ const CALLMEBOT_URL = "https://api.callmebot.com/whatsapp.php";
  * Send a WhatsApp message to the organizer via CallMeBot.
  * Non-blocking: errors are logged but don't break the main flow.
  */
-export async function notifyOrganizer(message: string): Promise<boolean> {
+export async function notifyOrganizer(message: string): Promise<{ success: boolean; detail: string }> {
   try {
     const encodedText = encodeURIComponent(message);
     const url = `${CALLMEBOT_URL}?phone=${CALLMEBOT_PHONE}&text=${encodedText}&apikey=${CALLMEBOT_APIKEY}`;
+
+    console.log("[WhatsApp] Calling URL:", url.substring(0, 100) + "...");
 
     const res = await fetch(url, {
       method: "GET",
       signal: AbortSignal.timeout(10000), // 10s timeout
     });
 
-    if (res.ok) {
-      const body = await res.text();
-      console.log("[WhatsApp] Notification response:", body);
-      return body.includes("queued");
+    const body = await res.text();
+    console.log("[WhatsApp] Status:", res.status, "Body:", body);
+
+    if (res.ok && body.includes("queued")) {
+      return { success: true, detail: body };
     } else {
-      const errText = await res.text();
-      console.error("[WhatsApp] Notification failed:", res.status, errText);
-      return false;
+      return { success: false, detail: `Status ${res.status}: ${body}` };
     }
-  } catch (err) {
-    console.error("[WhatsApp] Notification error:", err);
-    return false;
+  } catch (err: any) {
+    const errMsg = err?.message || String(err);
+    console.error("[WhatsApp] Notification error:", errMsg);
+    return { success: false, detail: `Error: ${errMsg}` };
   }
 }
 
