@@ -613,12 +613,10 @@ async function handlePaypalCreate(req: Request) {
   if (req.method !== "POST") return errorResponse("Method not allowed", 405);
 
   const body = await req.json();
-  const { inscriptionId, paquete, origin } = body;
-
-  if (!inscriptionId || !paquete || !origin) {
+   const { inscriptionId, paquete, origin } = body;
+  if (inscriptionId === undefined || inscriptionId === null || !paquete || !origin) {
     return errorResponse("Missing required fields", 400);
   }
-
   const amount = PAQUETE_PRICES_USD[paquete] || "179.00";
   const description = PAQUETE_LABELS[paquete] || "Cairo en los Andes Festival";
 
@@ -691,12 +689,10 @@ async function handleMPCreate(req: Request) {
   if (req.method !== "POST") return errorResponse("Method not allowed", 405);
 
   const body = await req.json();
-  const { inscriptionId, paquete, email, origin } = body;
-
-  if (!inscriptionId || !paquete || !email || !origin) {
+    const { inscriptionId, paquete, email, origin } = body;
+  if ((inscriptionId === undefined || inscriptionId === null) || !paquete || !email || !origin) {
     return errorResponse("Missing required fields", 400);
   }
-
   const mpToken = process.env.MERCADOPAGO_ACCESS_TOKEN;
   if (!mpToken) {
     return errorResponse("MercadoPago not configured", 500);
