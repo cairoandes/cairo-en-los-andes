@@ -75,6 +75,9 @@ export default async function handler(req: Request, context: Context) {
   // Could be /.netlify/functions/api/register or /api/register
   const route = pathParts[pathParts.length - 1];
 
+  // Always initialize DB on every request to prevent cold-start failures
+  await initDb();
+
   try {
     switch (route) {
       case "register":
