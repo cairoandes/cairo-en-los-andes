@@ -47,6 +47,7 @@ import {
   type SheetTabName,
 } from "./lib/organizerSheets.js";
 import { appendRowToSheet } from "./lib/sheetsAuth.js";
+import { notifyNewInscription, notifyNewDirectPurchase } from "./lib/whatsappNotify.js";
 
 // ── Organizer email (only this email can access organizer endpoints) ──
 const ORGANIZER_EMAILS = [
@@ -560,6 +561,15 @@ async function handleInscriptionSubmit(req: Request) {
     console.error("[Inscription] Failed to get inscription ID:", e);
   }
 
+  // Send WhatsApp notification to organizer (non-blocking)
+  notifyNewInscription({
+    nombre: body.nombre,
+    apellido: body.apellido,
+    email: body.email,
+    paquete: body.paquete,
+    telefono: body.telefono,
+  }).catch(() => {}); // fire-and-forget
+
   return jsonResponse({ success: true, sheetSuccess, inscriptionId });
 }
 
@@ -813,7 +823,17 @@ async function handleDirectPurchase(req: Request) {
     console.error("[DirectPurchase] Sheet sync error:", err);
   }
 
-  // 3. Create payment based on provider
+  // 3. Send WhatsApp notification to organizer (non-blocking)
+  notifyNewDirectPurchase({
+    nombre: nombre.trim(),
+    email: email.trim().toLowerCase(),
+    telefono: telefono.trim(),
+    productoLabel,
+    montoUSD,
+    paymentProvider,
+  }).catch(() => {}); // fire-and-forget
+
+  // 4. Create payment based on provider
   let redirectUrl: string | null = null;
 
   if (paymentProvider === "paypal") {
