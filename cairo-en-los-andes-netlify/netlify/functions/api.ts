@@ -46,6 +46,7 @@ import {
   getAvailableTabs,
   type SheetTabName,
 } from "./lib/organizerSheets.js";
+import { appendRowToSheet } from "./lib/sheetsAuth.js";
 
 // ── Organizer email (only this email can access organizer endpoints) ──
 const ORGANIZER_EMAILS = [
@@ -511,23 +512,18 @@ async function handleInscriptionSubmit(req: Request) {
     body.confirmaDatos ? "Sí" : "No", body.aceptaTerminos ? "Sí" : "No", body.nombreCompletoFirma || "",
   ];
 
-  // Try to append to Google Sheets (05_RESPUESTAS tab)
-  const apiKey = process.env.GOOGLE_API_KEY;
+  // Try to append to Google Sheets (05_RESPUESTAS tab) using Service Account
   const ORGANIZER_SHEET_ID = "1-Ml74ABa2UkFxiDr6NqNNEXoRJD-Fuzwk_TziMntLN0";
 
   let sheetSuccess = false;
-  if (apiKey) {
-    try {
-      const appendUrl = `https://sheets.googleapis.com/v4/spreadsheets/${ORGANIZER_SHEET_ID}/values/05_RESPUESTAS!A:BZ:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS&key=${apiKey}`;
-      const sheetRes = await fetch(appendUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ values: [row] }),
-      });
-      sheetSuccess = sheetRes.ok;
-    } catch (e) {
-      console.error("[Inscription] Google Sheets append failed:", e);
-    }
+  try {
+    sheetSuccess = await appendRowToSheet(
+      ORGANIZER_SHEET_ID,
+      "05_RESPUESTAS!A:BZ",
+      row
+    );
+  } catch (e) {
+    console.error("[Inscription] Google Sheets append failed:", e);
   }
 
   // Also save to local DB
@@ -800,23 +796,18 @@ async function handleDirectPurchase(req: Request) {
   });
   const purchaseId = Number(insertResult.lastInsertRowid);
 
-  // 2. Attempt Google Sheets sync (06_COMPRAS_DIRECTAS tab)
+  // 2. Attempt Google Sheets sync (06_COMPRAS_DIRECTAS tab) using Service Account
   try {
-    const apiKey = process.env.GOOGLE_API_KEY;
     const sheetId = "1-Ml74ABa2UkFxiDr6NqNNEXoRJD-Fuzwk_TziMntLN0";
-    if (apiKey) {
-      const timestamp = new Date().toISOString();
-      const row = [timestamp, nombre.trim(), email.trim().toLowerCase(), telefono.trim(), producto, productoLabel, `$${montoUSD}`, "PENDIENTE", paymentProvider];
-      const range = encodeURIComponent("06_COMPRAS_DIRECTAS!A:I");
-      const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}:append?valueInputOption=USER_ENTERED&key=${apiKey}`;
-      const sheetRes = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ values: [row] }),
-      });
-      if (sheetRes.ok) {
-        await db.execute({ sql: `UPDATE direct_purchases SET sheetSynced = 1 WHERE id = ?`, args: [purchaseId] });
-      }
+    const timestamp = new Date().toISOString();
+    const row = [timestamp, nombre.trim(), email.trim().toLowerCase(), telefono.trim(), producto, productoLabel, `$${montoUSD}`, "PENDIENTE", paymentProvider];
+    const synced = await appendRowToSheet(
+      sheetId,
+      "06_COMPRAS_DIRECTAS!A:I",
+      row
+    );
+    if (synced) {
+      await db.execute({ sql: `UPDATE direct_purchases SET sheetSynced = 1 WHERE id = ?`, args: [purchaseId] });
     }
   } catch (err) {
     console.error("[DirectPurchase] Sheet sync error:", err);
