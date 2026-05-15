@@ -6,6 +6,7 @@
  */
 import { useState, useRef, useEffect } from "react";
 import { useLang } from "@/contexts/LanguageContext";
+
 import { CreditCard, MessageCircle, Loader2, X, User, Mail, Phone } from "lucide-react";
 
 interface PaymentButtonsProps {
@@ -24,6 +25,8 @@ export default function PaymentButtons({ productKey, priceUSD, className = "" }:
   const [telefono, setTelefono] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const popupRef = useRef<HTMLDivElement>(null);
+
+
 
   // Close popup on outside click
   useEffect(() => {
@@ -60,7 +63,7 @@ export default function PaymentButtons({ productKey, priceUSD, className = "" }:
     setLoading(true);
 
     try {
-      const response = await fetch("/.netlify/functions/api/direct-purchase", {
+      const res = await fetch("/.netlify/functions/api/direct-purchase", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -72,13 +75,11 @@ export default function PaymentButtons({ productKey, priceUSD, className = "" }:
           origin: window.location.origin,
         }),
       });
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || "Payment failed");
 
-      const result = await response.json();
-
-      if (result.success && result.redirectUrl) {
+      if (result.redirectUrl) {
         window.location.href = result.redirectUrl;
-      } else {
-        throw new Error(result.error || "Unknown error");
       }
     } catch (err) {
       console.error("Payment error:", err);
@@ -136,10 +137,10 @@ export default function PaymentButtons({ productKey, priceUSD, className = "" }:
 
       {/* ═══ POPUP OVERLAY ═══ */}
       {showPopup && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 overflow-y-auto">
           <div
             ref={popupRef}
-            className="relative w-full max-w-md bg-[#0d1230] border border-[#d4a843]/30 rounded-2xl shadow-[0_0_60px_rgba(212,168,67,0.15)] overflow-hidden"
+            className="relative w-full max-w-md max-h-[90vh] overflow-y-auto bg-[#0d1230] border border-[#d4a843]/30 rounded-2xl shadow-[0_0_60px_rgba(212,168,67,0.15)]"
           >
             {/* Header */}
             <div className="bg-gradient-to-r from-[#d4a843]/20 to-[#e8842a]/20 px-6 py-4 border-b border-[#d4a843]/20">

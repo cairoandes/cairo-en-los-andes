@@ -11,6 +11,7 @@ import AnimateOnScroll from "@/components/AnimateOnScroll";
 import { CheckCircle2, PartyPopper, MessageCircle } from "lucide-react";
 import { Link } from "wouter";
 
+
 export default function PagoExitoso() {
   const { lang } = useLang();
   const markedRef = useRef(false);
@@ -33,7 +34,7 @@ export default function PagoExitoso() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ purchaseId: id }),
-        }).catch((err) => console.error("Failed to mark purchase as paid:", err));
+        }).catch(err => console.error("Mark paid error:", err));
       }
     }
   }, [type, purchaseId, isPending]);
@@ -69,7 +70,7 @@ export default function PagoExitoso() {
                   <h2 className="font-heading text-3xl font-bold gold-text mb-4">
                     {lang === "es" ? "¡Pago Exitoso!" : "Payment Successful!"}
                   </h2>
-                  <p className="text-[#faf5eb]/70 mb-6">
+                  <p className="text-[#faf5eb]/70 mb-4">
                     {isDirectPurchase
                       ? lang === "es"
                         ? "Tu compra ha sido registrada exitosamente. ¡Gracias por tu apoyo al Cairo en los Andes Festival!"
@@ -78,6 +79,15 @@ export default function PagoExitoso() {
                       ? "Tu inscripción al Cairo en los Andes Festival ha sido confirmada. ¡Nos vemos en Salta!"
                       : "Your registration for Cairo en los Andes Festival has been confirmed. See you in Salta!"}
                   </p>
+                  {isDirectPurchase && (
+                    <div className="bg-[#d4a843]/10 border border-[#d4a843]/30 rounded-xl px-5 py-4 mb-6">
+                      <p className="text-[#faf5eb]/80 text-sm leading-relaxed">
+                        {lang === "es"
+                          ? "La organización se pondrá en contacto con vos a la brevedad para emitirte la factura y enviarte tus entradas. ¡Muchas gracias!"
+                          : "The organization will contact you shortly to issue your invoice and send your tickets. Thank you!"}
+                      </p>
+                    </div>
+                  )}
                 </>
               )}
 
