@@ -17,8 +17,8 @@ export const navLinks = (lang: Lang) => [
   { label: lang === "es" ? "Paquetes" : "Packages", href: "/paquetes", type: "page" as const },
   { label: "Sponsors", href: "/sponsors", type: "page" as const },
   { label: lang === "es" ? "Turismo" : "Tourism", href: "/turismo", type: "page" as const },
-  { label: lang === "es" ? "Contacto" : "Contact", href: "/contacto", type: "page" as const },
   { label: lang === "es" ? "Inscripción" : "Registration", href: "/inscripcion", type: "page" as const },
+  { label: lang === "es" ? "Contacto" : "Contact", href: "/contacto", type: "page" as const },
   { label: lang === "es" ? "Pasaporte" : "Passport", href: "/pasaporte-cairo-andes", type: "page" as const },
   { label: lang === "es" ? "Mi Cuenta" : "My Account", href: "/mi-cuenta", type: "page" as const },
 ];
