@@ -831,15 +831,19 @@ async function handleDirectPurchase(req: Request) {
     console.error("[DirectPurchase] Sheet sync error:", err);
   }
 
-  // 3. Send WhatsApp notification to organizer (non-blocking)
-  notifyNewDirectPurchase({
-    nombre: nombre.trim(),
-    email: email.trim().toLowerCase(),
-    telefono: telefono.trim(),
-    productoLabel,
-    montoUSD,
-    paymentProvider,
-  }).catch(() => {}); // fire-and-forget
+  // 3. Send WhatsApp notification to organizer
+  try {
+    await notifyNewDirectPurchase({
+      nombre: nombre.trim(),
+      email: email.trim().toLowerCase(),
+      telefono: telefono.trim(),
+      productoLabel,
+      montoUSD,
+      paymentProvider,
+    });
+  } catch (e) {
+    console.error("[WhatsApp] direct purchase notification error:", e);
+  }
 
   // 4. Create payment based on provider
   let redirectUrl: string | null = null;
