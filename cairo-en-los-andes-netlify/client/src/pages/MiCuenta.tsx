@@ -32,7 +32,19 @@ import {
   Tag,
   Calculator,
   ExternalLink,
+  Calendar,
+  MapPin,
+  Music,
+  Plane,
+  Theater,
+  Hotel,
+  Bus,
+  Camera,
+  Star,
+  GraduationCap,
+  ArrowRight,
 } from "lucide-react";
+import { Link } from "wouter";
 
 /* ── Translations ── */
 const txt = {
@@ -286,7 +298,7 @@ export default function MiCuenta() {
 
       {/* Content */}
       <section className="pb-24 md:pb-32">
-        <div className="container max-w-2xl">
+        <div className="container max-w-3xl">
           {isAuthenticated ? (
             <Dashboard
               lang={lang}
@@ -675,7 +687,7 @@ function Dashboard({
   );
 }
 
-/* ── Dashboard Data Cards ── */
+/* ── Dashboard Data Cards — Premium ODA-style ── */
 function DashboardData({
   lang,
   t,
@@ -698,30 +710,7 @@ function DashboardData({
   const paymentStatus = getPaymentStatus(data.pagado, data.saldo, lang);
   const PaymentIcon = paymentStatus.icon;
 
-  const infoCards = [
-    {
-      icon: User,
-      label: t.dashName,
-      value: data.nombre || "—",
-    },
-    {
-      icon: Package,
-      label: t.dashPackage,
-      value: data.paquete || "—",
-    },
-    {
-      icon: Trophy,
-      label: t.dashCompetition,
-      value: data.competencia || "—",
-    },
-    {
-      icon: Hash,
-      label: t.dashParticipations,
-      value: data.participaciones || "—",
-    },
-  ];
-
-  // Generate bilingual payment labels on the frontend
+  // Generate bilingual payment labels
   const pagoLabels = [
     `${t.pago} 1`,
     `${t.pago} 2`,
@@ -735,183 +724,261 @@ function DashboardData({
   const hasPayments = data.pagos?.some((p) => hasRealAmount(p.amount));
 
   return (
-    <div className="space-y-6">
-      {/* Title */}
-      <div className="text-center">
-        <h3 className="font-heading text-lg md:text-xl font-bold gold-text">
-          {t.dashTitle}
-        </h3>
-        <p className="text-sm text-[#faf5eb]/50 mt-1">{t.dashSubtitle}</p>
-      </div>
+    <div className="space-y-5">
 
-      {/* Info cards grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {infoCards.map((card) => (
-          <div
-            key={card.label}
-            className="bg-[#0d1230]/60 rounded-xl border border-[#faf5eb]/10 p-5 hover:border-[#d4a843]/30 transition-all duration-300"
-          >
-            <div className="flex items-center gap-3 mb-2">
-              <card.icon size={16} className="text-[#d4a843]/70" />
-              <span className="text-xs font-medium text-[#faf5eb]/50 uppercase tracking-wider">
-                {card.label}
-              </span>
+      {/* ═══ CARD 1: MY PROFILE ═══ */}
+      <div className="relative rounded-2xl overflow-hidden border border-purple-500/30 group hover:border-purple-400/50 transition-all duration-500">
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/40 via-[#0d1230]/80 to-fuchsia-900/30" />
+        <div className="absolute top-0 right-0 w-40 h-40 bg-purple-500/10 rounded-full blur-3xl" />
+        <div className="relative p-6 md:p-8">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-400/30 to-fuchsia-500/20 border border-purple-400/40 flex items-center justify-center">
+              <User size={24} className="text-purple-300" />
             </div>
-            <p className="text-lg font-semibold text-[#faf5eb] pl-7">
-              {card.value}
-            </p>
+            <div>
+              <h3 className="font-heading text-xl font-bold text-[#faf5eb]">
+                {lang === "es" ? "Mi Perfil" : "My Profile"}
+              </h3>
+              <p className="text-sm text-purple-300/70">
+                {data.nombre || "—"}
+              </p>
+            </div>
           </div>
-        ))}
-      </div>
-
-      {/* Pricing section: Precio Base + Total a Pagar */}
-      <div className="bg-[#0d1230]/60 rounded-xl border border-[#d4a843]/20 p-6">
-        <div className="flex items-center gap-3 mb-4">
-          <Tag size={18} className="text-[#d4a843]" />
-          <h4 className="font-heading text-base font-bold text-[#faf5eb]">
-            {lang === "es" ? "Detalle del Paquete" : "Package Details"}
-          </h4>
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div className="bg-[#080c1a]/60 rounded-lg p-4 border border-[#faf5eb]/5">
-            <div className="flex items-center gap-2 mb-1">
-              <Tag size={14} className="text-[#d4a843]/70" />
-              <span className="text-xs text-[#faf5eb]/50 uppercase tracking-wider">
-                {t.dashPriceBase}
-              </span>
+          <p className="text-sm text-[#faf5eb]/60 mb-4">
+            {lang === "es"
+              ? "Tu información personal y datos del festival."
+              : "Your personal information and festival data."}
+          </p>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-[#080c1a]/50 rounded-lg p-3 border border-purple-500/10">
+              <span className="text-[10px] uppercase tracking-wider text-purple-300/60 block mb-1">{t.dashPackage}</span>
+              <span className="text-sm font-semibold text-[#faf5eb]">{data.paquete || "—"}</span>
             </div>
-            <p className="text-xl font-bold text-[#d4a843] pl-5">
-              {data.precioBase || "—"}
-            </p>
-          </div>
-          <div className="bg-[#080c1a]/60 rounded-lg p-4 border border-[#faf5eb]/5">
-            <div className="flex items-center gap-2 mb-1">
-              <Calculator size={14} className="text-[#d4a843]/70" />
-              <span className="text-xs text-[#faf5eb]/50 uppercase tracking-wider">
-                {t.dashTotalToPay}
-              </span>
+            <div className="bg-[#080c1a]/50 rounded-lg p-3 border border-purple-500/10">
+              <span className="text-[10px] uppercase tracking-wider text-purple-300/60 block mb-1">{t.dashCompetition}</span>
+              <span className="text-sm font-semibold text-[#faf5eb]">{data.competencia || "—"}</span>
             </div>
-            <p className="text-xl font-bold text-[#d4a843] pl-5">
-              {data.totalAPagar || "—"}
-            </p>
           </div>
         </div>
       </div>
 
-      {/* Payment status section: Pagado + Saldo */}
-      <div className="bg-[#0d1230]/60 rounded-xl border border-[#d4a843]/20 p-6">
-        <div className="flex items-center gap-3 mb-4">
-          <DollarSign size={18} className="text-[#d4a843]" />
-          <h4 className="font-heading text-base font-bold text-[#faf5eb]">
-            {lang === "es" ? "Estado de Pago" : "Payment Status"}
-          </h4>
-        </div>
-
-        {/* Payment status badge */}
-        <div
-          className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg border ${paymentStatus.bgColor} mb-4`}
-        >
-          <PaymentIcon size={16} className={paymentStatus.color} />
-          <span className={`text-sm font-semibold ${paymentStatus.color}`}>
-            {paymentStatus.label}
-          </span>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div className="bg-[#080c1a]/60 rounded-lg p-4 border border-[#faf5eb]/5">
-            <div className="flex items-center gap-2 mb-1">
-              <CreditCard size={14} className="text-emerald-400/70" />
-              <span className="text-xs text-[#faf5eb]/50 uppercase tracking-wider">
-                {t.dashPaid}
-              </span>
-            </div>
-            <p className="text-xl font-bold text-emerald-400 pl-5">
-              {data.pagado || "$0"}
-            </p>
+      {/* ═══ CARD 2: FESTIVAL HUB ═══ */}
+      <div className="relative rounded-2xl overflow-hidden border border-orange-500/30 group hover:border-orange-400/50 transition-all duration-500">
+        <div className="absolute inset-0 bg-gradient-to-br from-orange-900/30 via-[#0d1230]/80 to-red-900/20" />
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-orange-500/10 rounded-full blur-3xl" />
+        <div className="relative p-6 md:p-8">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/15 border border-orange-400/30 mb-4">
+            <Calendar size={12} className="text-orange-400" />
+            <span className="text-[10px] uppercase tracking-wider text-orange-300 font-semibold">
+              16, 17 & 18 {lang === "es" ? "Octubre" : "October"} 2026
+            </span>
           </div>
-          <div className="bg-[#080c1a]/60 rounded-lg p-4 border border-[#faf5eb]/5">
-            <div className="flex items-center gap-2 mb-1">
-              <DollarSign size={14} className="text-amber-400/70" />
-              <span className="text-xs text-[#faf5eb]/50 uppercase tracking-wider">
-                {t.dashBalance}
-              </span>
-            </div>
-            <p className="text-xl font-bold text-amber-400 pl-5">
-              {data.saldo || "$0"}
-            </p>
+          <h3 className="font-heading text-xl font-bold text-[#faf5eb] mb-2">
+            Festival Hub
+          </h3>
+          <p className="text-sm text-[#faf5eb]/60 mb-5">
+            {lang === "es"
+              ? "Workshops, galas, horarios, hotel y todo lo que necesitás para el festival."
+              : "Workshops, galas, schedules, hotel info, and everything you need for the festival."}
+          </p>
+          <div className="grid grid-cols-3 gap-2 mb-5">
+            {[
+              { icon: GraduationCap, label: "Workshops" },
+              { icon: Theater, label: "Galas" },
+              { icon: Trophy, label: lang === "es" ? "Competencia" : "Competition" },
+            ].map((item) => (
+              <div key={item.label} className="flex flex-col items-center gap-1 p-3 rounded-lg bg-[#080c1a]/50 border border-orange-500/10">
+                <item.icon size={18} className="text-orange-400/80" />
+                <span className="text-[10px] text-[#faf5eb]/60 text-center">{item.label}</span>
+              </div>
+            ))}
           </div>
+          <Link href="/festival" className="inline-flex items-center gap-2 text-orange-400 text-sm font-medium hover:text-orange-300 transition-colors">
+            <MapPin size={14} />
+            {lang === "es" ? "Explorar Festival" : "Explore Festival"}
+            <ArrowRight size={14} />
+          </Link>
         </div>
       </div>
 
-      {/* Payment History section */}
-      <div className="bg-[#0d1230]/60 rounded-xl border border-[#faf5eb]/10 p-6">
-        <div className="flex items-center gap-3 mb-2">
-          <Receipt size={18} className="text-[#d4a843]" />
-          <h4 className="font-heading text-base font-bold text-[#faf5eb]">
-            {t.paymentHistory}
-          </h4>
-        </div>
-        <p className="text-xs text-[#faf5eb]/40 mb-4 pl-8">
-          {t.paymentHistoryDesc}
-        </p>
+      {/* ═══ CARD 3: MI PAQUETE & PAGOS ═══ */}
+      <div className="relative rounded-2xl overflow-hidden border border-emerald-500/30 group hover:border-emerald-400/50 transition-all duration-500">
+        <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/30 via-[#0d1230]/80 to-teal-900/20" />
+        <div className="absolute top-0 left-1/2 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl" />
+        <div className="relative p-6 md:p-8">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-heading text-xl font-bold text-[#faf5eb] flex items-center gap-3">
+              <Package size={22} className="text-emerald-400" />
+              {lang === "es" ? "Mi Paquete" : "My Package"}
+            </h3>
+            <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border ${paymentStatus.bgColor}`}>
+              <PaymentIcon size={14} className={paymentStatus.color} />
+              <span className={`text-xs font-semibold ${paymentStatus.color}`}>
+                {paymentStatus.label}
+              </span>
+            </div>
+          </div>
 
-        {hasPayments ? (
-          <div className="space-y-2">
-            {data.pagos?.map((pago, idx) => {
-              const hasAmount = hasRealAmount(pago.amount);
-              return (
-                <div
-                  key={idx}
-                  className={`flex items-center justify-between px-4 py-3 rounded-lg border ${
-                    hasAmount
-                      ? "bg-emerald-400/5 border-emerald-400/15"
-                      : "bg-[#080c1a]/40 border-[#faf5eb]/5"
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
+          {/* Package details */}
+          <div className="grid grid-cols-2 gap-3 mb-5">
+            <div className="bg-[#080c1a]/50 rounded-lg p-4 border border-emerald-500/10">
+              <span className="text-[10px] uppercase tracking-wider text-emerald-300/60 block mb-1">{t.dashPriceBase}</span>
+              <span className="text-lg font-bold text-emerald-400">{data.precioBase || "—"}</span>
+            </div>
+            <div className="bg-[#080c1a]/50 rounded-lg p-4 border border-emerald-500/10">
+              <span className="text-[10px] uppercase tracking-wider text-emerald-300/60 block mb-1">{t.dashTotalToPay}</span>
+              <span className="text-lg font-bold text-emerald-400">{data.totalAPagar || "—"}</span>
+            </div>
+            <div className="bg-[#080c1a]/50 rounded-lg p-4 border border-emerald-500/10">
+              <span className="text-[10px] uppercase tracking-wider text-emerald-300/60 block mb-1">{t.dashPaid}</span>
+              <span className="text-lg font-bold text-emerald-400">{data.pagado || "$0"}</span>
+            </div>
+            <div className="bg-[#080c1a]/50 rounded-lg p-4 border border-emerald-500/10">
+              <span className="text-[10px] uppercase tracking-wider text-amber-300/60 block mb-1">{t.dashBalance}</span>
+              <span className="text-lg font-bold text-amber-400">{data.saldo || "$0"}</span>
+            </div>
+          </div>
+
+          {/* Payment History */}
+          <div className="border-t border-emerald-500/15 pt-4">
+            <div className="flex items-center gap-2 mb-3">
+              <Receipt size={14} className="text-emerald-400/70" />
+              <span className="text-xs font-medium text-[#faf5eb]/60 uppercase tracking-wider">{t.paymentHistory}</span>
+            </div>
+            {hasPayments ? (
+              <div className="space-y-2">
+                {data.pagos?.map((pago, idx) => {
+                  const hasAmount = hasRealAmount(pago.amount);
+                  return (
                     <div
-                      className={`w-2 h-2 rounded-full ${
-                        hasAmount ? "bg-emerald-400" : "bg-[#faf5eb]/20"
-                      }`}
-                    />
-                    <span
-                      className={`text-sm font-medium ${
-                        hasAmount ? "text-[#faf5eb]" : "text-[#faf5eb]/30"
+                      key={idx}
+                      className={`flex items-center justify-between px-3 py-2.5 rounded-lg border ${
+                        hasAmount
+                          ? "bg-emerald-400/5 border-emerald-400/15"
+                          : "bg-[#080c1a]/40 border-[#faf5eb]/5"
                       }`}
                     >
-                      {pagoLabels[idx] || pago.label}
-                    </span>
-                  </div>
-                  <span
-                    className={`text-sm font-bold ${
-                      hasAmount ? "text-emerald-400" : "text-[#faf5eb]/20"
-                    }`}
-                  >
-                    {hasAmount ? pago.amount : "—"}
-                  </span>
-                </div>
-              );
-            })}
+                      <div className="flex items-center gap-2">
+                        <div className={`w-1.5 h-1.5 rounded-full ${hasAmount ? "bg-emerald-400" : "bg-[#faf5eb]/20"}`} />
+                        <span className={`text-xs font-medium ${hasAmount ? "text-[#faf5eb]" : "text-[#faf5eb]/30"}`}>
+                          {pagoLabels[idx] || pago.label}
+                        </span>
+                      </div>
+                      <span className={`text-xs font-bold ${hasAmount ? "text-emerald-400" : "text-[#faf5eb]/20"}`}>
+                        {hasAmount ? pago.amount : "—"}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="text-center py-4 text-[#faf5eb]/30 text-xs">
+                {t.noPayments}
+              </div>
+            )}
           </div>
-        ) : (
-          <div className="text-center py-6 text-[#faf5eb]/30 text-sm">
-            {t.noPayments}
-          </div>
-        )}
+        </div>
       </div>
 
-      {/* WhatsApp - Request more services button */}
-      <div className="text-center pt-2">
-        <a
-          href={`https://wa.me/5493872617777?text=${t.whatsappMsg}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-[#d4a843] via-[#e8c35a] to-[#e8842a] text-[#080c1a] font-bold text-sm uppercase tracking-wider rounded-xl hover:shadow-lg hover:shadow-[#d4a843]/25 transition-all hover:scale-[1.02]"
-        >
-          <MessageCircle size={20} />
-          {t.dashRequestServices}
-          <ExternalLink size={14} />
-        </a>
+      {/* ═══ CARD 4: MIS PARTICIPACIONES ═══ */}
+      <div className="relative rounded-2xl overflow-hidden border border-[#d4a843]/30 group hover:border-[#d4a843]/50 transition-all duration-500">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#d4a843]/10 via-[#0d1230]/80 to-amber-900/20" />
+        <div className="absolute top-0 right-0 w-36 h-36 bg-[#d4a843]/10 rounded-full blur-3xl" />
+        <div className="relative p-6 md:p-8">
+          <h3 className="font-heading text-xl font-bold text-[#faf5eb] flex items-center gap-3 mb-3">
+            <Star size={22} className="text-[#d4a843]" />
+            {lang === "es" ? "Mis Participaciones" : "My Performances"}
+          </h3>
+          <p className="text-sm text-[#faf5eb]/60 mb-4">
+            {lang === "es"
+              ? "Tus números inscriptos para galas y competencia."
+              : "Your registered numbers for galas and competition."}
+          </p>
+          <div className="bg-[#080c1a]/50 rounded-lg p-4 border border-[#d4a843]/15">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-[#d4a843]/15 flex items-center justify-center">
+                <Hash size={18} className="text-[#d4a843]" />
+              </div>
+              <div>
+                <span className="text-[10px] uppercase tracking-wider text-[#d4a843]/60 block">{t.dashParticipations}</span>
+                <span className="text-base font-bold text-[#faf5eb]">{data.participaciones || "—"}</span>
+              </div>
+            </div>
+          </div>
+          {data.competencia && data.competencia !== "—" && data.competencia !== "" && (
+            <div className="mt-3 bg-[#080c1a]/50 rounded-lg p-4 border border-[#d4a843]/15">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-[#d4a843]/15 flex items-center justify-center">
+                  <Trophy size={18} className="text-[#d4a843]" />
+                </div>
+                <div>
+                  <span className="text-[10px] uppercase tracking-wider text-[#d4a843]/60 block">{t.dashCompetition}</span>
+                  <span className="text-base font-bold text-[#faf5eb]">{data.competencia}</span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ═══ CARD 5: LOGÍSTICA ═══ */}
+      <div className="relative rounded-2xl overflow-hidden border border-sky-500/30 group hover:border-sky-400/50 transition-all duration-500">
+        <div className="absolute inset-0 bg-gradient-to-br from-sky-900/30 via-[#0d1230]/80 to-indigo-900/20" />
+        <div className="absolute bottom-0 right-0 w-40 h-40 bg-sky-500/10 rounded-full blur-3xl" />
+        <div className="relative p-6 md:p-8">
+          <h3 className="font-heading text-xl font-bold text-[#faf5eb] flex items-center gap-3 mb-3">
+            <MapPin size={22} className="text-sky-400" />
+            {lang === "es" ? "Logística & Turismo" : "Logistics & Tourism"}
+          </h3>
+          <p className="text-sm text-[#faf5eb]/60 mb-5">
+            {lang === "es"
+              ? "Información de traslados, alojamiento y turismo en Salta."
+              : "Transportation, accommodation, and tourism info in Salta."}
+          </p>
+          <div className="grid grid-cols-3 gap-2 mb-5">
+            {[
+              { icon: Hotel, label: lang === "es" ? "Hotel" : "Hotel" },
+              { icon: Bus, label: lang === "es" ? "Traslados" : "Transfers" },
+              { icon: Camera, label: lang === "es" ? "Turismo" : "Tourism" },
+            ].map((item) => (
+              <div key={item.label} className="flex flex-col items-center gap-1 p-3 rounded-lg bg-[#080c1a]/50 border border-sky-500/10">
+                <item.icon size={18} className="text-sky-400/80" />
+                <span className="text-[10px] text-[#faf5eb]/60 text-center">{item.label}</span>
+              </div>
+            ))}
+          </div>
+          <Link href="/turismo" className="inline-flex items-center gap-2 text-sky-400 text-sm font-medium hover:text-sky-300 transition-colors">
+            <Plane size={14} />
+            {lang === "es" ? "Ver opciones de turismo" : "View tourism options"}
+            <ArrowRight size={14} />
+          </Link>
+        </div>
+      </div>
+
+      {/* ═══ CARD 6: CONTACTO / SOLICITAR MÁS ═══ */}
+      <div className="relative rounded-2xl overflow-hidden border border-[#d4a843]/30">
+        <div className="absolute inset-0 bg-gradient-to-r from-[#d4a843]/10 via-[#0d1230]/80 to-[#e8842a]/10" />
+        <div className="relative p-6 md:p-8 text-center">
+          <Sparkles size={24} className="text-[#d4a843] mx-auto mb-3" />
+          <h3 className="font-heading text-lg font-bold text-[#faf5eb] mb-2">
+            {lang === "es" ? "¿Necesitás algo más?" : "Need anything else?"}
+          </h3>
+          <p className="text-sm text-[#faf5eb]/60 mb-5">
+            {lang === "es"
+              ? "Contactanos por WhatsApp para solicitar servicios adicionales, resolver dudas o pedir ayuda."
+              : "Contact us via WhatsApp to request additional services, resolve questions, or get help."}
+          </p>
+          <a
+            href={`https://wa.me/5493872617777?text=${t.whatsappMsg}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-[#d4a843] via-[#e8c35a] to-[#e8842a] text-[#080c1a] font-bold text-sm uppercase tracking-wider rounded-xl hover:shadow-lg hover:shadow-[#d4a843]/25 transition-all hover:scale-[1.02]"
+          >
+            <MessageCircle size={20} />
+            {t.dashRequestServices}
+            <ExternalLink size={14} />
+          </a>
+        </div>
       </div>
     </div>
   );
