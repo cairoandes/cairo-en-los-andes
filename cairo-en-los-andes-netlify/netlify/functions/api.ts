@@ -47,7 +47,7 @@ import {
   type SheetTabName,
 } from "./lib/organizerSheets.js";
 import { appendRowToSheet } from "./lib/sheetsAuth.js";
-import { notifyOrganizer, notifyNewInscription, notifyNewDirectPurchase } from "./lib/whatsappNotify.js";
+import { notifyNewInscription, notifyNewDirectPurchase } from "./lib/whatsappNotify.js";
 
 // ── Organizer email (only this email can access organizer endpoints) ──
 const ORGANIZER_EMAILS = [
@@ -101,8 +101,6 @@ export default async function handler(req: Request, context: Context) {
         return handleDirectPurchase(req);
       case "direct-purchase-mark-paid":
         return handleDirectPurchaseMarkPaid(req);
-      case "test-whatsapp":
-        return handleTestWhatsapp();
       // ── Organizer endpoints ──
       case "organizer-me":
         return handleOrganizerMe(req);
@@ -980,10 +978,3 @@ async function handleDirectPurchaseMarkPaid(req: Request) {
   return jsonResponse({ success: true });
 }
 
-// ══════════════════════════════════════════════════════════════
-// TEST WHATSAPP ENDPOINT (temporary - for debugging)
-// ══════════════════════════════════════════════════════════════
-async function handleTestWhatsapp(): Promise<Response> {
-  const result = await notifyOrganizer("Test desde Netlify Functions");
-  return jsonResponse({ whatsapp: result });
-}
