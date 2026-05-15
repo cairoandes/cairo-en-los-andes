@@ -1,7 +1,9 @@
 /**
  * PagoExitoso — Payment success page.
  * Shows a confirmation after PayPal or MercadoPago payment.
+ * For direct purchases (galas/sponsors), also marks the purchase as PAGADO.
  */
+import { useEffect, useRef } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useLang } from "@/contexts/LanguageContext";
@@ -11,12 +13,32 @@ import { Link } from "wouter";
 
 export default function PagoExitoso() {
   const { lang } = useLang();
+  const markedRef = useRef(false);
 
-  // Parse URL params to detect provider and status
+  // Parse URL params to detect provider, status, and direct purchase info
   const params = new URLSearchParams(window.location.search);
   const provider = params.get("provider") || "unknown";
   const status = params.get("status");
   const isPending = status === "pending";
+  const type = params.get("type"); // "direct" for gala/sponsor purchases
+  const purchaseId = params.get("purchase_id");
+
+  // Mark direct purchase as PAGADO on success page load
+  useEffect(() => {
+    if (type === "direct" && purchaseId && !isPending && !markedRef.current) {
+      markedRef.current = true;
+      const id = parseInt(purchaseId, 10);
+      if (!isNaN(id) && id > 0) {
+        fetch("/.netlify/functions/api/direct-purchase-mark-paid", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ purchaseId: id }),
+        }).catch((err) => console.error("Failed to mark purchase as paid:", err));
+      }
+    }
+  }, [type, purchaseId, isPending]);
+
+  const isDirectPurchase = type === "direct";
 
   return (
     <div className="min-h-screen bg-[#080c1a] text-[#faf5eb]">
@@ -48,7 +70,11 @@ export default function PagoExitoso() {
                     {lang === "es" ? "¡Pago Exitoso!" : "Payment Successful!"}
                   </h2>
                   <p className="text-[#faf5eb]/70 mb-6">
-                    {lang === "es"
+                    {isDirectPurchase
+                      ? lang === "es"
+                        ? "Tu compra ha sido registrada exitosamente. ¡Gracias por tu apoyo al Cairo en los Andes Festival!"
+                        : "Your purchase has been successfully registered. Thank you for supporting Cairo en los Andes Festival!"
+                      : lang === "es"
                       ? "Tu inscripción al Cairo en los Andes Festival ha sido confirmada. ¡Nos vemos en Salta!"
                       : "Your registration for Cairo en los Andes Festival has been confirmed. See you in Salta!"}
                   </p>
@@ -64,7 +90,11 @@ export default function PagoExitoso() {
               <div className="space-y-3">
                 {/* WhatsApp contact */}
                 <a
-                  href="https://wa.me/5493873267777?text=Hola%20Cairo%20Andes!%20Acabo%20de%20realizar%20mi%20pago%20de%20inscripción."
+                  href={`https://wa.me/5493873267777?text=${encodeURIComponent(
+                    isDirectPurchase
+                      ? "Hola Cairo Andes! Acabo de realizar una compra desde la web."
+                      : "Hola Cairo Andes! Acabo de realizar mi pago de inscripción."
+                  )}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center justify-center gap-2 w-full py-3 px-6 bg-[#25D366] hover:bg-[#1fb855] text-white font-bold rounded-xl transition-colors"

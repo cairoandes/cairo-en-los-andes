@@ -51,6 +51,24 @@ export async function initDb(): Promise<void> {
   `);
 
   await db.execute(`
+    CREATE TABLE IF NOT EXISTS direct_purchases (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      nombre TEXT NOT NULL,
+      email TEXT NOT NULL,
+      telefono TEXT NOT NULL,
+      producto TEXT NOT NULL,
+      productoLabel TEXT NOT NULL,
+      montoUSD INTEGER NOT NULL,
+      estado TEXT NOT NULL DEFAULT 'PENDIENTE',
+      paymentProvider TEXT,
+      paymentId TEXT,
+      sheetSynced INTEGER DEFAULT 0,
+      createdAt TEXT DEFAULT (datetime('now')),
+      updatedAt TEXT DEFAULT (datetime('now'))
+    )
+  `);
+
+  await db.execute(`
     CREATE TABLE IF NOT EXISTS inscriptions (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       email TEXT NOT NULL,

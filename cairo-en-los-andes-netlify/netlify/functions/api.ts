@@ -91,6 +91,11 @@ export default async function handler(req: Request, context: Context) {
         return handlePaypalCreate(req);
       case "mp-create":
         return handleMPCreate(req);
+      // ── Direct purchase endpoints (galas/sponsors) ──
+      case "direct-purchase":
+        return handleDirectPurchase(req);
+      case "direct-purchase-mark-paid":
+        return handleDirectPurchaseMarkPaid(req);
       // ── Organizer endpoints ──
       case "organizer-me":
         return handleOrganizerMe(req);
@@ -761,4 +766,190 @@ async function handleMPCreate(req: Request) {
     preferenceId: prefData.id,
     initPoint: prefData.init_point,
   });
+}
+
+
+// ── Direct Purchase (galas/sponsors) ──
+async function handleDirectPurchase(req: Request) {
+  if (req.method !== "POST") return errorResponse("Method not allowed", 405);
+
+  const body = await req.json();
+  const { nombre, email, telefono, producto, paymentProvider, origin } = body;
+
+  if (!nombre || !email || !telefono || !producto || !paymentProvider || !origin) {
+    return errorResponse("Missing required fields (nombre, email, telefono, producto, paymentProvider, origin)", 400);
+  }
+
+  const productoLabel = PAQUETE_LABELS[producto];
+  const montoUSD = PAQUETE_PRICES_USD_NUM[producto];
+  if (!productoLabel || !montoUSD) {
+    return errorResponse(`Invalid product key: ${producto}`, 400);
+  }
+
+  await initDb();
+  const db = getDb();
+
+  // 1. Save to database with PENDIENTE status
+  const insertResult = await db.execute({
+    sql: `INSERT INTO direct_purchases (nombre, email, telefono, producto, productoLabel, montoUSD, estado, paymentProvider)
+          VALUES (?, ?, ?, ?, ?, ?, 'PENDIENTE', ?)`,
+    args: [nombre.trim(), email.trim().toLowerCase(), telefono.trim(), producto, productoLabel, montoUSD, paymentProvider],
+  });
+  const purchaseId = Number(insertResult.lastInsertRowid);
+
+  // 2. Attempt Google Sheets sync (06_COMPRAS_DIRECTAS tab)
+  try {
+    const apiKey = process.env.GOOGLE_API_KEY;
+    const sheetId = "1-Ml74ABa2UkFxiDr6NqNNEXoRJD-Fuzwk_TziMntLN0";
+    if (apiKey) {
+      const timestamp = new Date().toISOString();
+      const row = [timestamp, nombre.trim(), email.trim().toLowerCase(), telefono.trim(), producto, productoLabel, `$${montoUSD}`, "PENDIENTE", paymentProvider];
+      const range = encodeURIComponent("06_COMPRAS_DIRECTAS!A:I");
+      const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}:append?valueInputOption=USER_ENTERED&key=${apiKey}`;
+      const sheetRes = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ values: [row] }),
+      });
+      if (sheetRes.ok) {
+        await db.execute({ sql: `UPDATE direct_purchases SET sheetSynced = 1 WHERE id = ?`, args: [purchaseId] });
+      }
+    }
+  } catch (err) {
+    console.error("[DirectPurchase] Sheet sync error:", err);
+  }
+
+  // 3. Create payment based on provider
+  let redirectUrl: string | null = null;
+
+  if (paymentProvider === "paypal") {
+    const amount = PAQUETE_PRICES_USD[producto] || `${montoUSD}.00`;
+    const description = productoLabel;
+    const paypalClientId = process.env.PAYPAL_CLIENT_ID;
+    const paypalSecret = process.env.PAYPAL_SECRET;
+    if (!paypalClientId || !paypalSecret) return errorResponse("PayPal not configured", 500);
+
+    const authRes = await fetch("https://api-m.paypal.com/v1/oauth2/token", {
+      method: "POST",
+      headers: {
+        Authorization: `Basic ${btoa(`${paypalClientId}:${paypalSecret}`)}`,
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: "grant_type=client_credentials",
+    });
+    const authData = await authRes.json();
+    const accessToken = authData.access_token;
+
+    const orderRes = await fetch("https://api-m.paypal.com/v2/checkout/orders", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({
+        intent: "CAPTURE",
+        purchase_units: [{
+          amount: { currency_code: "USD", value: amount },
+          description,
+          custom_id: `direct-${purchaseId}`,
+        }],
+        application_context: {
+          brand_name: "Cairo en los Andes Festival",
+          return_url: `${origin}/pago-exitoso?provider=paypal&type=direct&purchase_id=${purchaseId}`,
+          cancel_url: `${origin}/?payment=cancelled`,
+          user_action: "PAY_NOW",
+        },
+      }),
+    });
+    const orderData = await orderRes.json();
+    const approvalLink = orderData.links?.find((l: any) => l.rel === "approve");
+    await db.execute({ sql: `UPDATE direct_purchases SET paymentId = ? WHERE id = ?`, args: [orderData.id, purchaseId] });
+    redirectUrl = approvalLink?.href || null;
+
+  } else if (paymentProvider === "mercadopago") {
+    const mpToken = process.env.MERCADOPAGO_ACCESS_TOKEN;
+    if (!mpToken) return errorResponse("MercadoPago not configured", 500);
+
+    const usdPrice = montoUSD;
+    let rate: number;
+    try {
+      const rateRes = await fetch("https://api.bluelytics.com.ar/v2/latest", { signal: AbortSignal.timeout(5000) });
+      const rateData = await rateRes.json();
+      rate = rateData.oficial?.value_sell || rateData.oficial?.value_avg || 1400;
+    } catch {
+      try {
+        const rateRes = await fetch("https://dolarapi.com/v1/dolares/oficial", { signal: AbortSignal.timeout(5000) });
+        const rateData = await rateRes.json();
+        rate = rateData.venta || 1400;
+      } catch {
+        rate = 1400;
+      }
+    }
+    const arsAmount = Math.round(usdPrice * rate);
+
+    const prefRes = await fetch("https://api.mercadopago.com/checkout/preferences", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${mpToken}`,
+      },
+      body: JSON.stringify({
+        items: [{
+          title: productoLabel,
+          description: `Compra #${purchaseId} - ${productoLabel} (USD ${usdPrice} × $${rate})`,
+          quantity: 1,
+          unit_price: arsAmount,
+          currency_id: "ARS",
+        }],
+        payer: { email: email.trim().toLowerCase() },
+        back_urls: {
+          success: `${origin}/pago-exitoso?provider=mercadopago&type=direct&purchase_id=${purchaseId}`,
+          failure: `${origin}/?payment=failed`,
+          pending: `${origin}/pago-exitoso?provider=mercadopago&type=direct&purchase_id=${purchaseId}&status=pending`,
+        },
+        auto_return: "approved",
+        external_reference: `direct-${purchaseId}`,
+        statement_descriptor: "CAIRO ANDES",
+      }),
+    });
+    if (!prefRes.ok) {
+      const err = await prefRes.text();
+      console.error("[DirectPurchase] MercadoPago error:", err);
+      return errorResponse("MercadoPago preference creation failed", 502);
+    }
+    const prefData = await prefRes.json();
+    await db.execute({ sql: `UPDATE direct_purchases SET paymentId = ? WHERE id = ?`, args: [prefData.id, purchaseId] });
+    redirectUrl = prefData.init_point;
+
+  } else if (paymentProvider === "whatsapp") {
+    redirectUrl = `https://wa.me/5493874671946?text=${encodeURIComponent(
+      `Hola! Quiero comprar: ${productoLabel}. Mi nombre es ${nombre}, email: ${email}, tel: ${telefono}`
+    )}`;
+  }
+
+  return jsonResponse({
+    success: true,
+    purchaseId,
+    redirectUrl,
+  });
+}
+
+// ── Mark Direct Purchase as Paid ──
+async function handleDirectPurchaseMarkPaid(req: Request) {
+  if (req.method !== "POST") return errorResponse("Method not allowed", 405);
+
+  const body = await req.json();
+  const { purchaseId } = body;
+  if (!purchaseId || typeof purchaseId !== "number") {
+    return errorResponse("Missing or invalid purchaseId", 400);
+  }
+
+  await initDb();
+  const db = getDb();
+  await db.execute({
+    sql: `UPDATE direct_purchases SET estado = 'PAGADO', updatedAt = datetime('now') WHERE id = ?`,
+    args: [purchaseId],
+  });
+
+  return jsonResponse({ success: true });
 }
